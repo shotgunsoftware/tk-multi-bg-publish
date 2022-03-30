@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/tk-multi-batchprocess">
+        <file>icons/waiting_to_start.png</file>
+        <file>icons/failed.png</file>
+        <file>icons/finished.png</file>
+        <file>icons/processing.png</file>
+    </qresource>
+</RCC>
