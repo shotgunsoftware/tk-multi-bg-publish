@@ -5,6 +5,8 @@
 # This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 
+import uuid
+
 import sgtk
 from sgtk.platform.qt import QtGui, QtCore
 from tank_vendor import yaml
@@ -23,27 +25,21 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
     (
         STATUS_ROLE,
         ICON_ROLE,
+        ICON_SIZE_ROLE,
+        PROGRESS_ROLE,
         TEXT_ROLE,
+        ITEM_TYPE_ROLE,
+        TOOLTIP_ROLE,
         NEXT_AVAILABLE_ROLE
-    ) = range(_BASE_ROLE, _BASE_ROLE + 4)
+    ) = range(_BASE_ROLE, _BASE_ROLE + 8)
 
     (
+        PUBLISH_SESSION,
         PUBLISH_ITEM,
         PUBLISH_TASK
-    ) = range(2)
+    ) = range(3)
 
-    STATUS_ICONS = {
-        constants.WAITING_TO_START: ":/tk-multi-batchprocess/icons/waiting_to_start.png",
-        constants.PUBLISH_IN_PROGRESS: ":/tk-multi-batchprocess/icons/processing.png",
-        constants.PUBLISH_FINISHED: ":/tk-multi-batchprocess/icons/processing.png",
-        constants.PUBLISH_FAILED: ":/tk-multi-batchprocess/icons/failed.png",
-        constants.FINALIZE_IN_PROGRESS: ":/tk-multi-batchprocess/icons/processing.png",
-        constants.FINALIZE_FINISHED: ":/tk-multi-batchprocess/icons/finished.png",
-        constants.FINALIZE_FAILED: ":/tk-multi-batchprocess/icons/failed.png",
-        constants.WARNING: ":/tk-multi-batchprocess/icons/warning.png",
-    }
-
-    STATUS_TEXT = {
+    TOOLTIP_TEXT = {
         constants.WAITING_TO_START: "The publish job is waiting to start",
         constants.PUBLISH_IN_PROGRESS: "The publish step is in progress",
         constants.PUBLISH_FINISHED: "The publish step is finished and the finalize step is waiting to start",
@@ -58,20 +54,30 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
         """
 
-        def __init__(self, item_type, item_uuid, name, status):
+        def __init__(self, item_type, name, session_uuid, item_uuid=None, status=None):
             """
             """
 
             self.__item_type = item_type
             self.__item_uuid = item_uuid
+            self.__session_uuid = session_uuid
 
             super(PublishTreeModel.PublishTreeItem, self).__init__(name)
 
-            self.setData(status, PublishTreeModel.STATUS_ROLE)
+            if status:
+                self.setData(status, PublishTreeModel.STATUS_ROLE)
+
+        @property
+        def item_type(self):
+            return self.__item_type
 
         @property
         def item_uuid(self):
             return self.__item_uuid
+
+        @property
+        def session_uuid(self):
+            return self.__session_uuid
 
         def data(self, role):
             """
@@ -82,12 +88,33 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             :return: The data for the specified role.
             """
 
-            if role == PublishTreeModel.ICON_ROLE:
-                icon_path = PublishTreeModel.STATUS_ICONS.get(self.data(PublishTreeModel.STATUS_ROLE))
-                return QtGui.QIcon(icon_path)
+            if role == PublishTreeModel.VIEW_ITEM_SEPARATOR_ROLE:
+                if self.__item_type == PublishTreeModel.PUBLISH_SESSION:
+                    return True
+                return False
 
-            if role == PublishTreeModel.TEXT_ROLE:
-                return PublishTreeModel.STATUS_TEXT.get(self.data(PublishTreeModel.STATUS_ROLE))
+            if role == PublishTreeModel.VIEW_ITEM_HEIGHT_ROLE:
+                if self.__item_type == PublishTreeModel.PUBLISH_SESSION:
+                    return 50
+                return -1
+
+            if role == PublishTreeModel.PROGRESS_ROLE:
+                if self.__item_type != PublishTreeModel.PUBLISH_SESSION:
+                    return None
+                return self.model().get_progress_value(self.__session_uuid)
+
+            if role == PublishTreeModel.ICON_SIZE_ROLE:
+                if self.__item_type == PublishTreeModel.PUBLISH_SESSION:
+                    return QtCore.QSize(30, 30)
+                return QtCore.QSize(18, 18)
+
+            if role == PublishTreeModel.ITEM_TYPE_ROLE:
+                return self.__item_type
+
+            if role == PublishTreeModel.TOOLTIP_ROLE:
+                if self.__item_type == PublishTreeModel.PUBLISH_TASK:
+                    return PublishTreeModel.TOOLTIP_TEXT.get(self.data(PublishTreeModel.STATUS_ROLE), None)
+                return None
 
             return super(PublishTreeModel.PublishTreeItem, self).data(role)
 
@@ -100,7 +127,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
         QtGui.QStandardItemModel.__init__(self, parent)
 
-        self.__items = []
+        self.__tasks = []
 
         self._bundle = sgtk.platform.current_bundle()
 
@@ -112,7 +139,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
 
         # be sure to remove all the stored items
-        self.__items = []
+        self.__tasks = []
 
         super(PublishTreeModel, self).clear()
 
@@ -122,29 +149,45 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         :return:
         """
 
-        # load the publish tree
-        # self._publish_manager.load(tree_file)
+        # create an uuid for the current session. It will be useful to gather all the tasks belonging to the same
+        # session
+        session_uuid = uuid.uuid4()
+
+        # load the monitor data
         with open(tree_file, "r") as fp:
             monitor_data = yaml.load(fp, Loader=yaml.FullLoader)
 
+        # first, add an item to represent the current session
+        session_item = PublishTreeModel.PublishTreeItem(
+            PublishTreeModel.PUBLISH_SESSION,
+            monitor_data["session_name"],
+            session_uuid
+        )
+        self.invisibleRootItem().appendRow(session_item)
+
+        # then, add the items and tasks
         for item in monitor_data["items"]:
-            model_item = PublishTreeModel.PublishTreeItem(
-                PublishTreeModel.PUBLISH_ITEM,
-                item["uuid"],
-                item["name"],
-                item["status"],
-            )
+            # if the parent item is the root item, do not add the item, only the task
+            if item["is_parent_root"]:
+                parent_item = session_item
+            else:
+                parent_item = PublishTreeModel.PublishTreeItem(
+                    PublishTreeModel.PUBLISH_ITEM,
+                    item["name"],
+                    session_uuid,
+                    item_uuid=item["uuid"],
+                )
+                session_item.appendRow(parent_item)
             for task in item["tasks"]:
                 task_item = PublishTreeModel.PublishTreeItem(
                     PublishTreeModel.PUBLISH_TASK,
-                    task["uuid"],
                     task["name"],
-                    task["status"],
+                    session_uuid,
+                    item_uuid=task["uuid"],
+                    status=task["status"],
                 )
-                model_item.appendRow(task_item)
-                self.__items.append(task_item)
-            self.invisibleRootItem().appendRow(model_item)
-            self.__items.append(model_item)
+                parent_item.appendRow(task_item)
+                self.__tasks.append(task_item)
 
     def update_publish_tree(self, tree_file):
         """
@@ -156,9 +199,6 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             monitor_data = yaml.load(fp, Loader=yaml.FullLoader)
 
         for item in monitor_data["items"]:
-            model_item = self.get_item_from_uuid(item["uuid"])
-            if model_item:
-                model_item.setData(item["status"], PublishTreeModel.STATUS_ROLE)
             for task in item["tasks"]:
                 task_item = self.get_item_from_uuid(task["uuid"])
                 if task_item:
@@ -169,7 +209,29 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         :param item_uuid:
         :return:
         """
-        for i in self.__items:
+        for i in self.__tasks:
             if i.item_uuid == item_uuid:
                 return i
         return None
+
+    def get_progress_value(self, session_uuid):
+        """
+        :return:
+        """
+
+        task_completed = 0
+        task_nb = 0
+
+        for t in self.__tasks:
+            if t.session_uuid != session_uuid:
+                continue
+            task_nb += 1
+            task_status = t.data(self.STATUS_ROLE)
+            if task_status in [constants.PUBLISH_FINISHED, constants.FINALIZE_IN_PROGRESS]:
+                task_completed += 1
+            elif task_status == constants.FINALIZE_FINISHED:
+                task_completed += 2
+
+        progress = 100 * task_completed / (task_nb * 2)
+
+        return int(progress)
