@@ -28,8 +28,8 @@ class BackgroundPublisher(Application):
         if not self.engine.has_ui:
             return
 
-        self._current_dialog = None
         self._unique_panel_id = self.engine.register_panel(self.create_panel)
+        self.current_dialog = None
 
         self.engine.register_command(
             "Background Publish Monitor",
@@ -51,18 +51,17 @@ class BackgroundPublisher(Application):
         :returns: The widget associated with the dialog.
         """
 
-        if self._current_dialog:
-            self._current_dialog.activateWindow()
-            return self._current_dialog
-
-        else:
+        if self.current_dialog is None:
             tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
-            widget = self.engine.show_dialog(
+            self.current_dialog = self.engine.show_dialog(
                 self.display_name,
                 self, tk_multi_bgpublish.AppDialog,
             )
-            self._current_dialog = widget
-            return widget
+        else:
+            self.current_dialog.raise_()
+            self.current_dialog.activateWindow()
+
+        return self.current_dialog
 
     def create_panel(self):
         """
@@ -85,14 +84,12 @@ class BackgroundPublisher(Application):
             )
         except AttributeError as e:
             # just to gracefully handle older engines and older cores
-            self.log_warning(
+            self.logger.warning(
                 "Could not execute show_panel method - please upgrade "
                 "to latest core and engine! Falling back on show_dialog. "
                 "Error: %s" % e
             )
             widget = self.create_dialog()
-        else:
-            self._current_panel = widget
 
         return widget
 

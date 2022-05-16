@@ -90,6 +90,8 @@ class AppDialog(QtGui.QWidget):
             self._bg_task_manager.shut_down()
             self._bg_task_manager = None
 
+        self._bundle.current_dialog = None
+
         return QtGui.QWidget.closeEvent(self, event)
 
     def reload(self, timeout=None):
