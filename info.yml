@@ -15,6 +15,11 @@ configuration:
         description: Path to the hook to use to get all the information to launch the publish process
         default_value: "{self}/exec_info.py"
 
+    reload_timeout:
+        type: int
+        description: Timeout (in seconds) we want to wait before reloading the monitor data
+        default_value: 2
+
 # this app works in all engines - it does not contain
 # any host application specific commands
 supported_engines:

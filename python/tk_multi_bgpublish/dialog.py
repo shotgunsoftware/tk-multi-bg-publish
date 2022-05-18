@@ -50,6 +50,7 @@ class AppDialog(QtGui.QWidget):
         self._cache_folder = os.path.join(
             self._bundle.cache_location, self._bundle.engine.name
         )
+        self.__reload_timeout = self._bundle.get_setting("reload_timeout")
 
         # now load in the UI that was created in the UI designer
         self._ui = Ui_Dialog()
@@ -149,7 +150,7 @@ class AppDialog(QtGui.QWidget):
 
         task_id = self._bg_task_manager.add_task(
             self.reload,
-            task_kwargs={"timeout": 3}
+            task_kwargs={"timeout": self.__reload_timeout}
         )
         self._pending_requests.append(task_id)
 
