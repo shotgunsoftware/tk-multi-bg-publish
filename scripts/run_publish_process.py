@@ -6,6 +6,8 @@
 # Source Code License included in this distribution package. See LICENSE.
 
 import ast
+import logging
+import os
 import sys
 
 import sgtk
@@ -109,7 +111,7 @@ def task_generator(tree, monitor_file_path, process_status, finished_status):
             change_progress_status(monitor_file_path, item.properties.uuid, finished_status)
 
 
-def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_file_path):
+def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_file_path, log_handler):
     """
     Main function of the script which launch the background publishing process.
     It will be responsible for:
@@ -153,7 +155,8 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
     bg_publish_app = current_engine.apps.get("tk-multi-bg-publish")
 
     # load the publish tree
-    manager = publish_app.create_publish_manager(publish_logger=current_engine.logger)
+    # manager = publish_app.create_publish_manager(publish_logger=current_engine.logger)
+    manager = publish_app.create_publish_manager(publish_logger=log_handler)
     manager.load(publish_tree)
 
     # modify the publish tree to indicate that we're now processing in background mode
@@ -238,17 +241,25 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
             )
 
     finally:
-        pass
-        # if engine_name == "tk-vred":
-        #     vrController.terminateVred()
+        if engine_name == "tk-vred":
+            vrController.terminateVred()
 
 
 if __name__ == "__main__":
+
+    # initialize a log handler
+    log_path = os.path.join(
+        os.path.dirname(sys.argv[4]),
+        "bg_publish.log"
+    )
+    sgtk_log_handler = logging.FileHandler(log_path)
+    sgtk.LogManager().initialize_custom_handler(sgtk_log_handler)
 
     main(
         sys.argv[1],
         int(sys.argv[2]),
         ast.literal_eval(sys.argv[3]),
         sys.argv[4],
-        sys.argv[5]
+        sys.argv[5],
+        sgtk_log_handler
     )

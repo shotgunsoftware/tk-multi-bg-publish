@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Y:\SGTK\devs\tk-multi-bg-publish\resources\dialog.ui'
 #
-# Created: Tue Mar 22 15:20:03 2022
+# Created: Mon May 16 17:23:25 2022
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -16,8 +16,10 @@ class Ui_Dialog(object):
         self.verticalLayout = QtGui.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.view = QtGui.QTreeView(Dialog)
+        self.view.setStyleSheet("show-decoration-selected: 0;")
         self.view.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.view.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
+        self.view.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.view.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         self.view.setRootIsDecorated(True)
         self.view.setObjectName("view")
         self.view.header().setVisible(False)

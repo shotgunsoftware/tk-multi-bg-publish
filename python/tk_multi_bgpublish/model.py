@@ -4,7 +4,7 @@
 #
 # This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-
+import os.path
 import uuid
 
 import sgtk
@@ -30,8 +30,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         TEXT_ROLE,
         ITEM_TYPE_ROLE,
         TOOLTIP_ROLE,
+        LOG_FOLDER_ROLE,
         NEXT_AVAILABLE_ROLE
-    ) = range(_BASE_ROLE, _BASE_ROLE + 8)
+    ) = range(_BASE_ROLE, _BASE_ROLE + 9)
 
     (
         PUBLISH_SESSION,
@@ -54,22 +55,23 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
         """
 
-        def __init__(self, item_type, name, session_uuid, item_uuid=None, status=None):
+        def __init__(self, item_type, name, session_uuid, log_folder, item_uuid=None, status=None):
             """
             """
 
             self.__item_type = item_type
             self.__item_uuid = item_uuid
             self.__session_uuid = session_uuid
+            self.__log_folder = log_folder
 
             super(PublishTreeModel.PublishTreeItem, self).__init__(name)
 
             if status:
                 self.setData(status, PublishTreeModel.STATUS_ROLE)
 
-        @property
-        def item_type(self):
-            return self.__item_type
+        # @property
+        # def item_type(self):
+        #     return self.__item_type
 
         @property
         def item_uuid(self):
@@ -116,6 +118,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                     return PublishTreeModel.TOOLTIP_TEXT.get(self.data(PublishTreeModel.STATUS_ROLE), None)
                 return None
 
+            if role == PublishTreeModel.LOG_FOLDER_ROLE:
+                return self.__log_folder
+
             return super(PublishTreeModel.PublishTreeItem, self).data(role)
 
     def __init__(self, parent):
@@ -154,6 +159,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         session_uuid = uuid.uuid4()
 
         # load the monitor data
+        log_folder = os.path.dirname(tree_file)
         with open(tree_file, "r") as fp:
             monitor_data = yaml.load(fp, Loader=yaml.FullLoader)
 
@@ -161,7 +167,8 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         session_item = PublishTreeModel.PublishTreeItem(
             PublishTreeModel.PUBLISH_SESSION,
             monitor_data["session_name"],
-            session_uuid
+            session_uuid,
+            log_folder
         )
         self.invisibleRootItem().appendRow(session_item)
 
@@ -175,6 +182,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                     PublishTreeModel.PUBLISH_ITEM,
                     item["name"],
                     session_uuid,
+                    log_folder,
                     item_uuid=item["uuid"],
                 )
                 session_item.appendRow(parent_item)
@@ -183,6 +191,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                     PublishTreeModel.PUBLISH_TASK,
                     task["name"],
                     session_uuid,
+                    log_folder,
                     item_uuid=task["uuid"],
                     status=task["status"],
                 )
@@ -203,6 +212,21 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 task_item = self.get_item_from_uuid(task["uuid"])
                 if task_item:
                     task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
+
+    def remove_publish_tree(self, tree_file):
+        """
+        :param tree_file:
+        :return:
+        """
+
+        log_folder = os.path.dirname(tree_file)
+
+        for r in range(self.rowCount()):
+            item = self.item(r)
+            if item.data(PublishTreeModel.ITEM_TYPE_ROLE) == PublishTreeModel.PUBLISH_SESSION:
+                if item.data(PublishTreeModel.LOG_FOLDER_ROLE) == log_folder:
+                    self.invisibleRootItem().removeRow(r)
+                    break
 
     def get_item_from_uuid(self, item_uuid):
         """

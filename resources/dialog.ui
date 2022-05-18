@@ -16,11 +16,17 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTreeView" name="view">
+     <property name="styleSheet">
+      <string notr="true">show-decoration-selected: 0;</string>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::NoSelection</enum>
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectItems</enum>
      </property>
      <property name="rootIsDecorated">
       <bool>true</bool>
