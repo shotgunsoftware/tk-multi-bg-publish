@@ -96,8 +96,6 @@ class AppDialog(QtGui.QWidget):
             self._bg_task_manager.shut_down()
             self._bg_task_manager = None
 
-        self._bundle.current_dialog = None
-
         return QtGui.QWidget.closeEvent(self, event)
 
     def reload(self, timeout=None):
@@ -197,7 +195,11 @@ class AppDialog(QtGui.QWidget):
         context_menu.addAction(delete_all_jobs_action)
 
         # add the "Delete completed job" menu action
-        progress = item.data(PublishTreeModel.PROGRESS_ROLE)
+        if item.data(PublishTreeModel.ITEM_TYPE_ROLE) == PublishTreeModel.PUBLISH_SESSION:
+            progress = item.data(PublishTreeModel.PROGRESS_ROLE)
+        else:
+            session_item = item.model().get_session_item(item.session_uuid)
+            progress = session_item.data(PublishTreeModel.PROGRESS_ROLE)
         if progress == 100:
             delete_job_action = QtGui.QAction("Delete completed job", context_menu)
             delete_job_action.triggered[()].connect(lambda checked=False: self._delete_job(item))

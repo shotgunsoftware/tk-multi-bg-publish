@@ -55,7 +55,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
         """
 
-        def __init__(self, item_type, name, session_uuid, log_folder, item_uuid=None, status=None):
+        def __init__(self, item_type, name, session_uuid, log_folder, item_uuid=None):
             """
             """
 
@@ -63,15 +63,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             self.__item_uuid = item_uuid
             self.__session_uuid = session_uuid
             self.__log_folder = log_folder
+            self.__progress_value = 0
 
             super(PublishTreeModel.PublishTreeItem, self).__init__(name)
-
-            if status:
-                self.setData(status, PublishTreeModel.STATUS_ROLE)
-
-        # @property
-        # def item_type(self):
-        #     return self.__item_type
 
         @property
         def item_uuid(self):
@@ -101,9 +95,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 return -1
 
             if role == PublishTreeModel.PROGRESS_ROLE:
-                if self.__item_type != PublishTreeModel.PUBLISH_SESSION:
-                    return None
-                return self.model().get_progress_value(self.__session_uuid)
+                return self.__progress_value
 
             if role == PublishTreeModel.ICON_SIZE_ROLE:
                 if self.__item_type == PublishTreeModel.PUBLISH_SESSION:
@@ -122,6 +114,19 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 return self.__log_folder
 
             return super(PublishTreeModel.PublishTreeItem, self).data(role)
+
+        def setData(self, value, role):
+            """
+            Override teh :class:`sgtk.platform.qt.QtGui.QStandardItem` method.
+            Set the data for the item and role.
+            :param value: The data value to set for the item's role.
+            :param role: The :class:`sgtk.platform.qt.QtCore.Qt.ItemDataRole` role.
+            """
+
+            if role == PublishTreeModel.PROGRESS_ROLE:
+                self.__progress_value = value
+            else:
+                super(PublishTreeModel.PublishTreeItem, self).setData(value, role)
 
     def __init__(self, parent):
         """
@@ -193,10 +198,13 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                     session_uuid,
                     log_folder,
                     item_uuid=task["uuid"],
-                    status=task["status"],
                 )
+                task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
                 parent_item.appendRow(task_item)
                 self.__tasks.append(task_item)
+
+        progress_value = self.get_progress_value(session_uuid)
+        session_item.setData(progress_value, PublishTreeModel.PROGRESS_ROLE)
 
     def update_publish_tree(self, tree_file):
         """
@@ -211,7 +219,13 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             for task in item["tasks"]:
                 task_item = self.get_item_from_uuid(task["uuid"])
                 if task_item:
+
                     task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
+
+                    progress_value = self.get_progress_value(task_item.session_uuid)
+                    session_item = self.get_session_item(task_item.session_uuid)
+                    session_item.setData(progress_value, PublishTreeModel.PROGRESS_ROLE)
+                    session_item.emitDataChanged()
 
     def remove_publish_tree(self, tree_file):
         """
@@ -238,6 +252,19 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 return i
         return None
 
+    def get_session_item(self, session_uuid):
+        """
+        :param session_uuid:
+        :return:
+        """
+        for r in range(self.rowCount()):
+            item = self.item(r)
+            if item.data(PublishTreeModel.ITEM_TYPE_ROLE) != PublishTreeModel.PUBLISH_SESSION:
+                continue
+            if item.session_uuid == session_uuid:
+                return item
+        return None
+
     def get_progress_value(self, session_uuid):
         """
         :return:
@@ -256,6 +283,6 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             elif task_status == constants.FINALIZE_FINISHED:
                 task_completed += 2
 
-        progress = 100 * task_completed / (task_nb * 2)
+        progress = 100 * task_completed / (task_nb * 2) if task_nb != 0 else 0
 
         return int(progress)

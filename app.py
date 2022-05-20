@@ -29,7 +29,6 @@ class BackgroundPublisher(Application):
             return
 
         self._unique_panel_id = self.engine.register_panel(self.create_panel)
-        self.current_dialog = None
 
         self.engine.register_command(
             "Background Publish Monitor",
@@ -51,17 +50,28 @@ class BackgroundPublisher(Application):
         :returns: The widget associated with the dialog.
         """
 
-        if self.current_dialog is None:
+        # try to find existing window in order to avoid having many instances of the same app opened at the same time
+        app_dialog = None
+        for qt_dialog in self.engine.created_qt_dialogs:
+            if not hasattr(qt_dialog, "_widget"):
+                continue
+            app_name = qt_dialog._widget.property("app_name")
+            if app_name == self.name:
+                app_dialog = qt_dialog
+                break
+
+        if app_dialog:
+            app_dialog.raise_()
+            app_dialog.activateWindow()
+        else:
             tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
-            self.current_dialog = self.engine.show_dialog(
+            app_dialog = self.engine.show_dialog(
                 self.display_name,
                 self, tk_multi_bgpublish.AppDialog,
             )
-        else:
-            self.current_dialog.raise_()
-            self.current_dialog.activateWindow()
+            app_dialog.setProperty("app_name", self.name)
 
-        return self.current_dialog
+        return app_dialog
 
     def create_panel(self):
         """
