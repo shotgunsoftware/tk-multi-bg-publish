@@ -133,7 +133,6 @@ def main(
     entity_dict,
     publish_tree,
     monitor_file_path,
-    log_handler,
 ):
     """
     Main function of the script which launch the background publishing process.
@@ -151,6 +150,11 @@ def main(
     :param publish_tree: Path to the file to use to load the publish tree
     :param monitor_file_path: Path to the file to use to monitor the publish process
     """
+
+    # initialize a log handler
+    log_path = os.path.join(os.path.dirname(monitor_file_path), "bg_publish.log")
+    log_handler = logging.FileHandler(log_path)
+    sgtk.LogManager().initialize_custom_handler(log_handler)
 
     # initialize the environment
     if engine_name == "tk-maya":
@@ -282,16 +286,10 @@ def main(
 
 if __name__ == "__main__":
 
-    # initialize a log handler
-    log_path = os.path.join(os.path.dirname(sys.argv[4]), "bg_publish.log")
-    sgtk_log_handler = logging.FileHandler(log_path)
-    sgtk.LogManager().initialize_custom_handler(sgtk_log_handler)
-
     main(
         sys.argv[1],
         int(sys.argv[2]),
         ast.literal_eval(sys.argv[3]),
         sys.argv[4],
         sys.argv[5],
-        sgtk_log_handler,
     )
