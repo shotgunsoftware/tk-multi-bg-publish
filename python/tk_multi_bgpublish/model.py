@@ -4,7 +4,8 @@
 #
 # This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
-import os.path
+
+import os
 import uuid
 
 import sgtk
@@ -19,6 +20,7 @@ ViewItemRolesMixin = delegates.ViewItemRolesMixin
 
 class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
     """
+    A model to manage publish session and tasks
     """
 
     _BASE_ROLE = QtCore.Qt.UserRole + 32
@@ -53,10 +55,18 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     class PublishTreeItem(QtGui.QStandardItem):
         """
+        An item for publish element (session, item and task)
         """
 
         def __init__(self, item_type, name, session_uuid, log_folder, item_uuid=None):
             """
+            Class constructor
+
+            :param item_type: Type of the item (PUBLISH_SESSION, PUBLISH_ITEM or PUBLISH_TASK)
+            :param name: Item name
+            :param session_uuid: Unique identifier of the session the publish items and tasks belong to
+            :param log_folder: Path to the folder containing all the session files (monitor file, log file, ...)
+            :param item_uuid: Unique identifier of the publish item the tasks belong to
             """
 
             self.__item_type = item_type
@@ -119,6 +129,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             """
             Override teh :class:`sgtk.platform.qt.QtGui.QStandardItem` method.
             Set the data for the item and role.
+
             :param value: The data value to set for the item's role.
             :param role: The :class:`sgtk.platform.qt.QtCore.Qt.ItemDataRole` role.
             """
@@ -137,6 +148,8 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
         QtGui.QStandardItemModel.__init__(self, parent)
 
+        # this will be used to store all the tasks because of performance issue (going through the tree model is slower
+        # than parsing a list)
         self.__tasks = []
 
         self._bundle = sgtk.platform.current_bundle()
@@ -146,7 +159,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def clear(self):
         """
+        Clear the model data
         """
+
+        self._bundle.logger.debug("Clearing the model...")
 
         # be sure to remove all the stored items
         self.__tasks = []
@@ -155,9 +171,12 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def add_publish_tree(self, tree_file):
         """
-        :param tree_file:
-        :return:
+        Add a new publish session to the model
+
+        :param tree_file: Path to the file where the publish monitor data are stored
         """
+
+        self._bundle.logger.debug("Adding a new publish session to the model...")
 
         # create an uuid for the current session. It will be useful to gather all the tasks belonging to the same
         # session
@@ -208,8 +227,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def update_publish_tree(self, tree_file):
         """
-        :param tree_file:
-        :return:
+        Update the publish session data
+
+        :param tree_file: Path to the file where the publish monitor data are stored
         """
 
         with open(tree_file, "r") as fp:
@@ -222,6 +242,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
                     task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
 
+                    # once the task status has been updated, force the publish session to refresh its progress value
                     progress_value = self.get_progress_value(task_item.session_uuid)
                     session_item = self.get_session_item(task_item.session_uuid)
                     session_item.setData(progress_value, PublishTreeModel.PROGRESS_ROLE)
@@ -229,8 +250,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def remove_publish_tree(self, tree_file):
         """
-        :param tree_file:
-        :return:
+        Remove a publish session from the model
+
+        :param tree_file: Path to the file where the publish monitor data are stored
         """
 
         log_folder = os.path.dirname(tree_file)
@@ -244,8 +266,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def get_item_from_uuid(self, item_uuid):
         """
-        :param item_uuid:
-        :return:
+        Get the model item from the publish item UUID
+
+        :param item_uuid: UUID of the publish item we want to get the associated model item
+        :return: The PublishTreeModel.PublishTreeItem representing the publish item
         """
         for i in self.__tasks:
             if i.item_uuid == item_uuid:
@@ -254,8 +278,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def get_session_item(self, session_uuid):
         """
-        :param session_uuid:
-        :return:
+        Get the model item from the session item UUID
+
+        :param session_uuid: UUID of the publish session we want to get the associated model item
+        :return: The PublishTreeModel.PublishTreeItem representing the publish session
         """
         for r in range(self.rowCount()):
             item = self.item(r)
@@ -267,7 +293,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
     def get_progress_value(self, session_uuid):
         """
-        :return:
+        Calculate the progress value of the publish session
+
+        :param session_uuid: UUID of the publish session we want to get the progress value for
+        :return: The progress value of the publish session
         """
 
         task_completed = 0

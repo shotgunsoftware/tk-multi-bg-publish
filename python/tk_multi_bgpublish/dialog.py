@@ -56,16 +56,17 @@ class AppDialog(QtGui.QWidget):
         self._ui = Ui_Dialog()
         self._ui.setupUi(self)
 
+        # initialize a BackgroundTaskManager to be able to perform the reload action without locking anything
         self._pending_requests = []
         self._bg_task_manager = BackgroundTaskManager(self, max_threads=2)
         self._bg_task_manager.start_processing()
         shotgun_globals.register_bg_task_manager(self._bg_task_manager)
 
-        # create the model to store all the publish information
+        # create the model to store all the publish sessions
         self._publish_tree_model = PublishTreeModel(self)
         self._ui.view.setModel(self._publish_tree_model)
 
-        # create the delegate used to correctly the model data into the view
+        # create the delegate used to correctly display the model data into the view
         self._publish_tree_delegate = create_publish_tree_delegate(self._ui.view)
         self._ui.view.setItemDelegate(self._publish_tree_delegate)
 
@@ -73,10 +74,11 @@ class AppDialog(QtGui.QWidget):
         self._bg_task_manager.task_completed.connect(self._on_background_task_completed)
         self._bg_task_manager.task_failed.connect(self._on_background_task_failed)
 
+        # initialize a context menu to add extra actions without polluting the UI
         self._ui.view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self._ui.view.customContextMenuRequested.connect(self._on_context_menu_requested)
 
-        # load the data
+        # finally, load the data
         task_id = self._bg_task_manager.add_task(
             self.reload
         )
@@ -90,7 +92,7 @@ class AppDialog(QtGui.QWidget):
         :param event: Close event
         """
 
-        # close down back ground tasks
+        # close down background tasks
         if self._bg_task_manager:
             shotgun_globals.unregister_bg_task_manager(self._bg_task_manager)
             self._bg_task_manager.shut_down()
@@ -102,8 +104,10 @@ class AppDialog(QtGui.QWidget):
         """
         Reload the model with the monitor data.
 
-        :param timeout: Refresh timetout
+        :param timeout: Refresh timeout
         """
+
+        self._bundle.logger.debug("Start refreshing the model data...")
 
         if timeout:
             time.sleep(timeout)
@@ -111,6 +115,7 @@ class AppDialog(QtGui.QWidget):
         if not os.path.exists(self._cache_folder):
             return
 
+        # parse the cache folder to get all the monitor files and fill the model
         for bg_cache_folder in os.listdir(self._cache_folder):
 
             monitor_file_path = os.path.join(self._cache_folder, bg_cache_folder, "monitor.yml")
@@ -138,6 +143,7 @@ class AppDialog(QtGui.QWidget):
         """
         Slot triggered when the background manager has finished doing some task. The only task we're asking the manager
         to do is to find the latest published file associated to the current item.
+
         :param uid:      Unique id associated with the task
         :param group_id: The group the task is associated with
         :param result:   The data returned by the task
@@ -155,6 +161,7 @@ class AppDialog(QtGui.QWidget):
     def _on_background_task_failed(self, uid, group_id, msg, stack_trace):
         """
         Slot triggered when the background manager fails to do some task.
+
         :param uid:         Unique id associated with the task
         :param group_id:    The group the task is associated with
         :param msg:         Short error message
@@ -168,10 +175,12 @@ class AppDialog(QtGui.QWidget):
 
     def _on_context_menu_requested(self, pnt):
         """
+        Populate the context menu
 
         :param pnt: The position for the context menu relative to the source widget.
         """
 
+        # get the selected model item
         selection_model = self._ui.view.selectionModel()
         if not selection_model:
             return
@@ -195,6 +204,7 @@ class AppDialog(QtGui.QWidget):
         context_menu.addAction(delete_all_jobs_action)
 
         # add the "Delete completed job" menu action
+        # this one will only be added if all the session tasks have been completed
         if item.data(PublishTreeModel.ITEM_TYPE_ROLE) == PublishTreeModel.PUBLISH_SESSION:
             progress = item.data(PublishTreeModel.PROGRESS_ROLE)
         else:
@@ -209,9 +219,15 @@ class AppDialog(QtGui.QWidget):
         pnt = self.sender().mapToGlobal(pnt)
         context_menu.exec_(pnt)
 
+    # ---------------------------------------------------------------------------------------------
+    # Context menu actions
+    # ---------------------------------------------------------------------------------------------
+
     def _open_log_folder(self, item):
         """
-        :return:
+        Open the file explorer at the log folder location
+
+        :param item: The selected model item
         """
 
         log_folder = item.data(PublishTreeModel.LOG_FOLDER_ROLE)
@@ -235,7 +251,7 @@ class AppDialog(QtGui.QWidget):
 
     def _delete_all_jobs(self):
         """
-        :return:
+        Delete all the completed jobs
         """
 
         for r in range(self._publish_tree_model.rowCount()):
@@ -247,8 +263,10 @@ class AppDialog(QtGui.QWidget):
 
     def _delete_job(self, item, reload=True):
         """
-        :param item:
-        :return:
+        Delete a specific job
+
+        :param item: The selected model item
+        :param reload: If True, the model will be reloaded once the log folder has been deleted
         """
 
         log_folder = item.data(PublishTreeModel.LOG_FOLDER_ROLE)

@@ -14,6 +14,7 @@ from . import constants
 delegates = sgtk.platform.import_framework("tk-framework-qtwidgets", "delegates")
 ViewItemDelegate = delegates.ViewItemDelegate
 
+# colors used for the progress icons
 IN_PROGRESS_COLOR = QtGui.QColor(238, 135, 38)
 COMPLETED_COLOR = QtGui.QColor(14, 230, 99)
 FAILED_COLOR = QtGui.QColor(187, 11, 11)
@@ -22,8 +23,10 @@ WAITING_COLOR = QtGui.QColor(255, 255, 255)
 
 def create_publish_tree_delegate(view):
     """
-    :param view:
-    :return:
+    Create and return the ViewItemDelegate for the view.
+
+    :param view: The view to create the delegate for.
+    :return: The delegate for the view
     """
 
     # create the delegate
@@ -44,9 +47,10 @@ def create_publish_tree_delegate(view):
     delegate.height_role = PublishTreeModel.VIEW_ITEM_HEIGHT_ROLE
     delegate.text_rect_valign = ViewItemDelegate.CENTER
 
+    # add a first action to display the total progress value
     delegate.add_action(
         {
-            "icon": None, # the get_data callback will set the icon
+            "icon": None,  # the get_data callback will set the icon
             "show_always": True,
             "features": QtGui.QStyleOptionButton.Flat,
             "get_data": _get_progress_icon,
@@ -54,6 +58,7 @@ def create_publish_tree_delegate(view):
         ViewItemDelegate.RIGHT
     )
 
+    # add a second action to display the status of the finalize step
     delegate.add_action(
         {
             "icon": None,  # the get_data callback will set the icon
@@ -64,6 +69,7 @@ def create_publish_tree_delegate(view):
         ViewItemDelegate.RIGHT
     )
 
+    # add a third action to display the status of the publish step
     delegate.add_action(
         {
             "icon": None,  # the get_data callback will set the icon
@@ -79,16 +85,18 @@ def create_publish_tree_delegate(view):
 
 def _get_progress_icon(parent, index):
     """
-    :param parent:
-    :param index:
-    :return:
+    Create an icon to display the progress value for the session item.
+
+    :param parent: This is the parent of the :class:`ViewItemDelegate`, which is the view.
+    :param index: The index the action is for.
+    :return: The data for the action and index.
     """
 
     icon = None
     tooltip = None
 
+    # we're only displaying the progress value for the session item
     item_type = index.data(PublishTreeModel.ITEM_TYPE_ROLE)
-
     if item_type == PublishTreeModel.PUBLISH_SESSION:
         progress_value = index.data(PublishTreeModel.PROGRESS_ROLE)
         icon_size = index.data(PublishTreeModel.ICON_SIZE_ROLE)
@@ -110,17 +118,20 @@ def _get_progress_icon(parent, index):
 
 def _get_publish_icon(parent, index):
     """
-    :param parent:
-    :param index:
-    :return:
+    Create an icon to display the status of the publish step
+
+    :param parent: This is the parent of the :class:`ViewItemDelegate`, which is the view.
+    :param index: The index the action is for.
+    :return: The data for the action and index.
     """
 
     icon = None
     tooltip = None
 
+    # we're only displaying the progress value for the task item
     item_type = index.data(PublishTreeModel.ITEM_TYPE_ROLE)
-
     if item_type == PublishTreeModel.PUBLISH_TASK:
+
         icon_size = index.data(PublishTreeModel.ICON_SIZE_ROLE)
         status = index.data(PublishTreeModel.STATUS_ROLE)
         tooltip = index.data(PublishTreeModel.TOOLTIP_ROLE)
@@ -144,7 +155,6 @@ def _get_publish_icon(parent, index):
             text_color=color
         )
 
-
     return {
         "icon": icon,
         "icon_size": index.data(PublishTreeModel.ICON_SIZE_ROLE),
@@ -155,17 +165,20 @@ def _get_publish_icon(parent, index):
 
 def _get_finalize_icon(parent, index):
     """
-    :param parent:
-    :param index:
-    :return:
+    Create an icon to display the status of the finalize step
+
+    :param parent: This is the parent of the :class:`ViewItemDelegate`, which is the view.
+    :param index: The index the action is for.
+    :return: The data for the action and index.
     """
 
     icon = None
     tooltip = None
 
+    # we're only displaying the progress value for the task item
     item_type = index.data(PublishTreeModel.ITEM_TYPE_ROLE)
-
     if item_type == PublishTreeModel.PUBLISH_TASK:
+
         icon_size = index.data(PublishTreeModel.ICON_SIZE_ROLE)
         status = index.data(PublishTreeModel.STATUS_ROLE)
         tooltip = index.data(PublishTreeModel.TOOLTIP_ROLE)
@@ -189,7 +202,6 @@ def _get_finalize_icon(parent, index):
             text_color=color
         )
 
-
     return {
         "icon": icon,
         "icon_size": index.data(PublishTreeModel.ICON_SIZE_ROLE),
@@ -198,15 +210,20 @@ def _get_finalize_icon(parent, index):
     }
 
 
-def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCore.Qt.white,
-                secondary_color=QtCore.Qt.white, pen_size=2, padding=2, font_size=10):
+def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCore.Qt.white, pen_size=2, padding=2,
+                font_size=10):
     """
-    :param text:
-    :param progress_value:
-    :param progress_color:
-    :param text_color:
-    :param completed_color:
-    :return:
+    Draw a text within a circle as a QIcon to be able to use it as a progress widget by the delegate icon
+
+    :param icon_size: Size of the icon
+    :param text: Text to be used within the circle
+    :param progress_value: Progress value
+    :param progress_color: Color to be used to draw the circle
+    :param text_color: Color to be used to draw the text
+    :param pen_size: Size of the pen used to draw
+    :param padding: Padding between the pixmap border and the circle
+    :param font_size: Font size of the text
+    :return: A QIcon containing the progress widget
     """
 
     # create a pixmap to store the drawing
@@ -234,18 +251,7 @@ def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCo
         (-16) * span_angle
     )
 
-    # draw the second arc - it will represent the percentage of the remaining tasks
-    # painter.setPen(QtGui.QPen(secondary_color, pen_size))
-    # painter.drawArc(
-    #     padding,
-    #     padding,
-    #     icon_size.width() - 2 * padding,
-    #     icon_size.height() - 2 * padding,
-    #     start_angle,
-    #     16 * (360 - span_angle)
-    # )
-
-    # finally, draw the text that will be displayed inside of the circle
+    # finally, draw the text that will be displayed inside the circle
     painter.setPen(QtGui.QPen(text_color, pen_size))
     painter.setFont(QtGui.QFont("times", font_size))
     painter.drawText(

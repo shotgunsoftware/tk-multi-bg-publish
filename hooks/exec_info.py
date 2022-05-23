@@ -42,8 +42,8 @@ class AppUtilities(HookBaseClass):
         """
         Build the environment to use when launching the publish script in a subprocess.
 
-        :return: A dictionary where the key is the environment variable name and the value is the environment variable value.
-            If None is returned, the subprocess will inherit of the current environment.
+        :return: A dictionary where the key is the environment variable name and the value is the environment variable
+            value. If None is returned, the subprocess will inherit of the current environment.
         """
 
         current_engine = self.parent.engine
