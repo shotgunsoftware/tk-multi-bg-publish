@@ -32,8 +32,7 @@ class BackgroundPublisher(Application):
 
         self.engine.register_command(
             "Background Publish Monitor",
-            # self.create_panel,
-            self.create_dialog,
+            self.create_panel,
             {"short_name": "bg_publish_monitor"},
         )
 
