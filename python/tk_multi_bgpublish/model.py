@@ -33,14 +33,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         ITEM_TYPE_ROLE,
         TOOLTIP_ROLE,
         LOG_FOLDER_ROLE,
-        NEXT_AVAILABLE_ROLE
+        NEXT_AVAILABLE_ROLE,
     ) = range(_BASE_ROLE, _BASE_ROLE + 9)
 
-    (
-        PUBLISH_SESSION,
-        PUBLISH_ITEM,
-        PUBLISH_TASK
-    ) = range(3)
+    (PUBLISH_SESSION, PUBLISH_ITEM, PUBLISH_TASK) = range(3)
 
     TOOLTIP_TEXT = {
         constants.WAITING_TO_START: "The publish job is waiting to start",
@@ -117,7 +113,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
             if role == PublishTreeModel.TOOLTIP_ROLE:
                 if self.__item_type == PublishTreeModel.PUBLISH_TASK:
-                    return PublishTreeModel.TOOLTIP_TEXT.get(self.data(PublishTreeModel.STATUS_ROLE), None)
+                    return PublishTreeModel.TOOLTIP_TEXT.get(
+                        self.data(PublishTreeModel.STATUS_ROLE), None
+                    )
                 return None
 
             if role == PublishTreeModel.LOG_FOLDER_ROLE:
@@ -192,7 +190,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             PublishTreeModel.PUBLISH_SESSION,
             monitor_data["session_name"],
             session_uuid,
-            log_folder
+            log_folder,
         )
         self.invisibleRootItem().appendRow(session_item)
 
@@ -259,7 +257,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
         for r in range(self.rowCount()):
             item = self.item(r)
-            if item.data(PublishTreeModel.ITEM_TYPE_ROLE) == PublishTreeModel.PUBLISH_SESSION:
+            if (
+                item.data(PublishTreeModel.ITEM_TYPE_ROLE)
+                == PublishTreeModel.PUBLISH_SESSION
+            ):
                 if item.data(PublishTreeModel.LOG_FOLDER_ROLE) == log_folder:
                     self.invisibleRootItem().removeRow(r)
                     break
@@ -285,7 +286,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
         for r in range(self.rowCount()):
             item = self.item(r)
-            if item.data(PublishTreeModel.ITEM_TYPE_ROLE) != PublishTreeModel.PUBLISH_SESSION:
+            if (
+                item.data(PublishTreeModel.ITEM_TYPE_ROLE)
+                != PublishTreeModel.PUBLISH_SESSION
+            ):
                 continue
             if item.session_uuid == session_uuid:
                 return item
@@ -307,7 +311,10 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 continue
             task_nb += 1
             task_status = t.data(self.STATUS_ROLE)
-            if task_status in [constants.PUBLISH_FINISHED, constants.FINALIZE_IN_PROGRESS]:
+            if task_status in [
+                constants.PUBLISH_FINISHED,
+                constants.FINALIZE_IN_PROGRESS,
+            ]:
                 task_completed += 1
             elif task_status == constants.FINALIZE_FINISHED:
                 task_completed += 2

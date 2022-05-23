@@ -55,7 +55,7 @@ def create_publish_tree_delegate(view):
             "features": QtGui.QStyleOptionButton.Flat,
             "get_data": _get_progress_icon,
         },
-        ViewItemDelegate.RIGHT
+        ViewItemDelegate.RIGHT,
     )
 
     # add a second action to display the status of the finalize step
@@ -66,7 +66,7 @@ def create_publish_tree_delegate(view):
             "features": QtGui.QStyleOptionButton.Flat,
             "get_data": _get_finalize_icon,
         },
-        ViewItemDelegate.RIGHT
+        ViewItemDelegate.RIGHT,
     )
 
     # add a third action to display the status of the publish step
@@ -77,7 +77,7 @@ def create_publish_tree_delegate(view):
             "features": QtGui.QStyleOptionButton.Flat,
             "get_data": _get_publish_icon,
         },
-        ViewItemDelegate.RIGHT
+        ViewItemDelegate.RIGHT,
     )
 
     return delegate
@@ -101,10 +101,7 @@ def _get_progress_icon(parent, index):
         progress_value = index.data(PublishTreeModel.PROGRESS_ROLE)
         icon_size = index.data(PublishTreeModel.ICON_SIZE_ROLE)
         icon = __draw_icon(
-            icon_size,
-            str(progress_value),
-            progress_value,
-            COMPLETED_COLOR
+            icon_size, str(progress_value), progress_value, COMPLETED_COLOR
         )
         tooltip = "Publish in progress: {}%".format(progress_value)
 
@@ -112,7 +109,7 @@ def _get_progress_icon(parent, index):
         "icon": icon,
         "icon_size": index.data(PublishTreeModel.ICON_SIZE_ROLE),
         "tooltip": tooltip,
-        "visible": True
+        "visible": True,
     }
 
 
@@ -146,20 +143,14 @@ def _get_publish_icon(parent, index):
             color = COMPLETED_COLOR
 
         icon = __draw_icon(
-            icon_size,
-            "P",
-            100,
-            color,
-            pen_size=1,
-            font_size=6,
-            text_color=color
+            icon_size, "P", 100, color, pen_size=1, font_size=6, text_color=color
         )
 
     return {
         "icon": icon,
         "icon_size": index.data(PublishTreeModel.ICON_SIZE_ROLE),
         "tooltip": tooltip,
-        "visible": True
+        "visible": True,
     }
 
 
@@ -193,25 +184,27 @@ def _get_finalize_icon(parent, index):
             color = WAITING_COLOR
 
         icon = __draw_icon(
-            icon_size,
-            "F",
-            100,
-            color,
-            pen_size=1,
-            font_size=6,
-            text_color=color
+            icon_size, "F", 100, color, pen_size=1, font_size=6, text_color=color
         )
 
     return {
         "icon": icon,
         "icon_size": index.data(PublishTreeModel.ICON_SIZE_ROLE),
         "tooltip": tooltip,
-        "visible": True
+        "visible": True,
     }
 
 
-def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCore.Qt.white, pen_size=2, padding=2,
-                font_size=10):
+def __draw_icon(
+    icon_size,
+    text,
+    progress_value,
+    progress_color,
+    text_color=QtCore.Qt.white,
+    pen_size=2,
+    padding=2,
+    font_size=10,
+):
     """
     Draw a text within a circle as a QIcon to be able to use it as a progress widget by the delegate icon
 
@@ -248,7 +241,7 @@ def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCo
         icon_size.width() - 2 * padding,
         icon_size.height() - 2 * padding,
         start_angle,
-        (-16) * span_angle
+        (-16) * span_angle,
     )
 
     # finally, draw the text that will be displayed inside the circle
@@ -260,7 +253,7 @@ def __draw_icon(icon_size, text, progress_value, progress_color, text_color=QtCo
         icon_size.width() - (padding * 6),
         icon_size.height() - (padding * 6),
         QtCore.Qt.AlignCenter,
-        text
+        text,
     )
 
     painter.end()

@@ -14,9 +14,6 @@ HookBaseClass = sgtk.get_hook_baseclass()
 
 
 class AppUtilities(HookBaseClass):
-    """
-    """
-
     def get_executable_path(self):
         """
         Get the path to the executable to use to run the publish script.

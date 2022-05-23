@@ -18,8 +18,12 @@ from .ui.dialog import Ui_Dialog
 from .model import PublishTreeModel
 from .delegate import create_publish_tree_delegate
 
-shotgun_globals = sgtk.platform.import_framework("tk-framework-shotgunutils", "shotgun_globals")
-task_manager = sgtk.platform.import_framework("tk-framework-shotgunutils", "task_manager")
+shotgun_globals = sgtk.platform.import_framework(
+    "tk-framework-shotgunutils", "shotgun_globals"
+)
+task_manager = sgtk.platform.import_framework(
+    "tk-framework-shotgunutils", "task_manager"
+)
 BackgroundTaskManager = task_manager.BackgroundTaskManager
 
 
@@ -76,12 +80,12 @@ class AppDialog(QtGui.QWidget):
 
         # initialize a context menu to add extra actions without polluting the UI
         self._ui.view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self._ui.view.customContextMenuRequested.connect(self._on_context_menu_requested)
+        self._ui.view.customContextMenuRequested.connect(
+            self._on_context_menu_requested
+        )
 
         # finally, load the data
-        task_id = self._bg_task_manager.add_task(
-            self.reload
-        )
+        task_id = self._bg_task_manager.add_task(self.reload)
         self._pending_requests.append(task_id)
 
     def closeEvent(self, event):
@@ -118,7 +122,9 @@ class AppDialog(QtGui.QWidget):
         # parse the cache folder to get all the monitor files and fill the model
         for bg_cache_folder in os.listdir(self._cache_folder):
 
-            monitor_file_path = os.path.join(self._cache_folder, bg_cache_folder, "monitor.yml")
+            monitor_file_path = os.path.join(
+                self._cache_folder, bg_cache_folder, "monitor.yml"
+            )
             if not os.path.exists(monitor_file_path):
                 continue
 
@@ -153,8 +159,7 @@ class AppDialog(QtGui.QWidget):
         self._pending_requests.remove(uid)
 
         task_id = self._bg_task_manager.add_task(
-            self.reload,
-            task_kwargs={"timeout": self.__reload_timeout}
+            self.reload, task_kwargs={"timeout": self.__reload_timeout}
         )
         self._pending_requests.append(task_id)
 
@@ -171,7 +176,9 @@ class AppDialog(QtGui.QWidget):
         if uid in self._pending_requests:
             self._pending_requests.remove(uid)
 
-        self._bundle.logger.error("Error happening when reloading the data: {}".format(stack_trace))
+        self._bundle.logger.error(
+            "Error happening when reloading the data: {}".format(stack_trace)
+        )
 
     def _on_context_menu_requested(self, pnt):
         """
@@ -195,24 +202,35 @@ class AppDialog(QtGui.QWidget):
 
         # add the "Open Log Folder" menu action
         open_folder_action = QtGui.QAction("Open Log Folder", context_menu)
-        open_folder_action.triggered[()].connect(lambda checked=False: self._open_log_folder(item))
+        open_folder_action.triggered[()].connect(
+            lambda checked=False: self._open_log_folder(item)
+        )
         context_menu.addAction(open_folder_action)
 
         # add the "Delete all completed jobs" menu action
-        delete_all_jobs_action = QtGui.QAction("Delete all completed jobs", context_menu)
-        delete_all_jobs_action.triggered[()].connect(lambda checked=False: self._delete_all_jobs())
+        delete_all_jobs_action = QtGui.QAction(
+            "Delete all completed jobs", context_menu
+        )
+        delete_all_jobs_action.triggered[()].connect(
+            lambda checked=False: self._delete_all_jobs()
+        )
         context_menu.addAction(delete_all_jobs_action)
 
         # add the "Delete completed job" menu action
         # this one will only be added if all the session tasks have been completed
-        if item.data(PublishTreeModel.ITEM_TYPE_ROLE) == PublishTreeModel.PUBLISH_SESSION:
+        if (
+            item.data(PublishTreeModel.ITEM_TYPE_ROLE)
+            == PublishTreeModel.PUBLISH_SESSION
+        ):
             progress = item.data(PublishTreeModel.PROGRESS_ROLE)
         else:
             session_item = item.model().get_session_item(item.session_uuid)
             progress = session_item.data(PublishTreeModel.PROGRESS_ROLE)
         if progress == 100:
             delete_job_action = QtGui.QAction("Delete completed job", context_menu)
-            delete_job_action.triggered[()].connect(lambda checked=False: self._delete_job(item))
+            delete_job_action.triggered[()].connect(
+                lambda checked=False: self._delete_job(item)
+            )
             context_menu.addAction(delete_job_action)
 
         # map the point to a global position to display the context menu at the right location
@@ -232,7 +250,9 @@ class AppDialog(QtGui.QWidget):
 
         log_folder = item.data(PublishTreeModel.LOG_FOLDER_ROLE)
         if not os.path.exists(log_folder):
-            self._bundle.logger.error("Couldn't open {}: doesn't exist on disk".format(log_folder))
+            self._bundle.logger.error(
+                "Couldn't open {}: doesn't exist on disk".format(log_folder)
+            )
             return
 
         cmd = None
@@ -244,7 +264,9 @@ class AppDialog(QtGui.QWidget):
             cmd = 'open "{}"'.format(log_folder)
 
         if cmd is None:
-            self._bundle.logger.error("Couldn't open {}: can't find a valid 'open' command".format(log_folder))
+            self._bundle.logger.error(
+                "Couldn't open {}: can't find a valid 'open' command".format(log_folder)
+            )
             return
 
         subprocess.Popen(cmd)
@@ -271,7 +293,9 @@ class AppDialog(QtGui.QWidget):
 
         log_folder = item.data(PublishTreeModel.LOG_FOLDER_ROLE)
         if not os.path.exists(log_folder):
-            self._bundle.logger.error("Couldn't delete job: doesn't exist on disk anymore")
+            self._bundle.logger.error(
+                "Couldn't delete job: doesn't exist on disk anymore"
+            )
             return
 
         shutil.rmtree(log_folder)

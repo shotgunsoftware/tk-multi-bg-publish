@@ -34,9 +34,7 @@ class BackgroundPublisher(Application):
             "Background Publish Monitor",
             # self.create_panel,
             self.create_dialog,
-            {
-                "short_name": "bg_publish_monitor"
-            }
+            {"short_name": "bg_publish_monitor"},
         )
 
     @property
@@ -67,7 +65,8 @@ class BackgroundPublisher(Application):
             tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
             app_dialog = self.engine.show_dialog(
                 self.display_name,
-                self, tk_multi_bgpublish.AppDialog,
+                self,
+                tk_multi_bgpublish.AppDialog,
             )
             app_dialog.setProperty("app_name", self.name)
 
@@ -116,27 +115,42 @@ class BackgroundPublisher(Application):
             return
 
         if not os.path.exists(publish_tree_file_path):
-            self.logger.error("Couldn't find {} publish tree file on disk".format(publish_tree_file_path))
+            self.logger.error(
+                "Couldn't find {} publish tree file on disk".format(
+                    publish_tree_file_path
+                )
+            )
             return
 
         monitor_file_path = os.path.join(
-            os.path.dirname(publish_tree_file_path),
-            "monitor.yml"
+            os.path.dirname(publish_tree_file_path), "monitor.yml"
         )
         if not os.path.exists(monitor_file_path):
-            self.logger.error("Couldn't find {} monitor publish file on disk".format(monitor_file_path))
+            self.logger.error(
+                "Couldn't find {} monitor publish file on disk".format(
+                    monitor_file_path
+                )
+            )
             return
 
         # find the right executable to use to execute the publish process
-        executable_path = self.execute_hook_method("exec_info_hook", "get_executable_path")
+        executable_path = self.execute_hook_method(
+            "exec_info_hook", "get_executable_path"
+        )
         if not os.path.exists(executable_path):
-            self.logger.error("Couldn't find a valid path on disk for {}".format(executable_path))
+            self.logger.error(
+                "Couldn't find a valid path on disk for {}".format(executable_path)
+            )
             return
 
         # get the path to the script we want to run
-        script_path = os.path.join(self.disk_location, "scripts", "run_publish_process.py")
+        script_path = os.path.join(
+            self.disk_location, "scripts", "run_publish_process.py"
+        )
         if not os.path.exists(script_path):
-            self.logger.error("Couldn't find a valid path on disk for {}".format(script_path))
+            self.logger.error(
+                "Couldn't find a valid path on disk for {}".format(script_path)
+            )
             return
 
         entity_dict = None
@@ -156,21 +170,18 @@ class BackgroundPublisher(Application):
             python_cmd += "import sys;"
             python_cmd += "sys.path.append(r'{}');".format(os.path.dirname(script_path))
             python_cmd += "import run_publish_process;"
-            python_cmd += "run_publish_process.main('{engine_name}', {pc_id}, {entity_dict}, r'{publish_tree_path}', " \
-                          "r'{monitor_file_path}');".format(
-                engine_name=self.engine.name,
-                pc_id=self.sgtk.pipeline_configuration.get_shotgun_id(),
-                entity_dict=entity_dict,
-                publish_tree_path=publish_tree_file_path,
-                monitor_file_path=monitor_file_path
+            python_cmd += (
+                "run_publish_process.main('{engine_name}', {pc_id}, {entity_dict}, r'{publish_tree_path}', "
+                "r'{monitor_file_path}');".format(
+                    engine_name=self.engine.name,
+                    pc_id=self.sgtk.pipeline_configuration.get_shotgun_id(),
+                    entity_dict=entity_dict,
+                    publish_tree_path=publish_tree_file_path,
+                    monitor_file_path=monitor_file_path,
+                )
             )
 
-            cmd = [
-                executable_path,
-                "-hide_gui",
-                "-postpython",
-                python_cmd
-            ]
+            cmd = [executable_path, "-hide_gui", "-postpython", python_cmd]
 
         else:
             cmd = [
@@ -180,7 +191,7 @@ class BackgroundPublisher(Application):
                 str(self.sgtk.pipeline_configuration.get_shotgun_id()),
                 str(entity_dict),
                 publish_tree_file_path,
-                monitor_file_path
+                monitor_file_path,
             ]
 
         # modify the STARTUPINFO to run the subprocess in silent mode

@@ -14,8 +14,14 @@ import sgtk
 from tank_vendor import yaml
 
 
-def change_progress_status(monitor_file_path, item_uuid, process_status, task_uuid=None, previous_task_uuid=None,
-                           finish_status=None):
+def change_progress_status(
+    monitor_file_path,
+    item_uuid,
+    process_status,
+    task_uuid=None,
+    previous_task_uuid=None,
+    finish_status=None,
+):
     """
     Update the monitor file once a task/item has been processed.
 
@@ -42,7 +48,11 @@ def change_progress_status(monitor_file_path, item_uuid, process_status, task_uu
                 if task["uuid"] == task_uuid:
                     task["status"] = process_status
                 # if a UUID has been provided for the previous task, find the task and update its status
-                elif previous_task_uuid and task["uuid"] == previous_task_uuid and finish_status:
+                elif (
+                    previous_task_uuid
+                    and task["uuid"] == previous_task_uuid
+                    and finish_status
+                ):
                     task["status"] = finish_status
                 else:
                     continue
@@ -94,7 +104,11 @@ def task_generator(tree, monitor_file_path, process_status, finished_status):
         for task in item.tasks:
             if task.active:
                 task_uuid = task.settings["Task UUID"].value
-                previous_task_uuid = None if not previous_task else previous_task.settings["Task UUID"].value
+                previous_task_uuid = (
+                    None
+                    if not previous_task
+                    else previous_task.settings["Task UUID"].value
+                )
                 # change the status of the task before returning it
                 change_progress_status(
                     monitor_file_path,
@@ -102,16 +116,25 @@ def task_generator(tree, monitor_file_path, process_status, finished_status):
                     process_status,
                     task_uuid=task_uuid,
                     previous_task_uuid=previous_task_uuid,
-                    finish_status=finished_status
+                    finish_status=finished_status,
                 )
                 previous_task = task
                 yield task
         # once all the tasks have been done, change the status of the item itself
         if item.properties.get("uuid"):
-            change_progress_status(monitor_file_path, item.properties.uuid, finished_status)
+            change_progress_status(
+                monitor_file_path, item.properties.uuid, finished_status
+            )
 
 
-def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_file_path, log_handler):
+def main(
+    engine_name,
+    pipeline_config_id,
+    entity_dict,
+    publish_tree,
+    monitor_file_path,
+    log_handler,
+):
     """
     Main function of the script which launch the background publishing process.
     It will be responsible for:
@@ -132,12 +155,15 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
     # initialize the environment
     if engine_name == "tk-maya":
         import maya.standalone
+
         maya.standalone.initialize()
         import maya.cmds as cmds
+
         # import pymel to be sure everyting has been sourced and imported
         import pymel.core as pm
     elif engine_name == "tk-alias":
         import alias_api
+
         alias_api.initialize_universe()
     elif engine_name == "tk-vred":
         import vrController
@@ -181,7 +207,12 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
     elif engine_name == "tk-alias":
         alias_api.open_file(session_path)
     elif engine_name == "tk-vred":
-        vrFileIO.load([session_path], vrScenegraph.getRootNode(), newFile=True, showImportOptions=False)
+        vrFileIO.load(
+            [session_path],
+            vrScenegraph.getRootNode(),
+            newFile=True,
+            showImportOptions=False,
+        )
 
     # run publish() method for each task
     # we're using a custom task iterator in order to be able to update the task status once an action is done
@@ -205,11 +236,13 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
     # if an error occurred during the publish process, try to find which task has failed and update the status
     # accordingly
     except Exception as e:
-        current_engine.logger.error("Error happening during publish process: {} ".format(e))
+        current_engine.logger.error(
+            "Error happening during publish process: {} ".format(e)
+        )
         change_failed_task_status(
             monitor_file_path,
             bg_publish_app.constants.PUBLISH_IN_PROGRESS,
-            bg_publish_app.constants.PUBLISH_FAILED
+            bg_publish_app.constants.PUBLISH_FAILED,
         )
 
     # if all the publish tasks have been done without failing, run finalize() method
@@ -233,11 +266,13 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
         # if an error occurred during the publish process, try to find which task has failed and update the status
         # accordingly
         except Exception as e:
-            current_engine.logger.error("Error happening during finalize process: {} ".format(e))
+            current_engine.logger.error(
+                "Error happening during finalize process: {} ".format(e)
+            )
             change_failed_task_status(
                 monitor_file_path,
                 bg_publish_app.constants.FINALIZE_IN_PROGRESS,
-                bg_publish_app.constants.FINALIZE_FAILED
+                bg_publish_app.constants.FINALIZE_FAILED,
             )
 
     finally:
@@ -248,10 +283,7 @@ def main(engine_name, pipeline_config_id, entity_dict, publish_tree, monitor_fil
 if __name__ == "__main__":
 
     # initialize a log handler
-    log_path = os.path.join(
-        os.path.dirname(sys.argv[4]),
-        "bg_publish.log"
-    )
+    log_path = os.path.join(os.path.dirname(sys.argv[4]), "bg_publish.log")
     sgtk_log_handler = logging.FileHandler(log_path)
     sgtk.LogManager().initialize_custom_handler(sgtk_log_handler)
 
@@ -261,5 +293,5 @@ if __name__ == "__main__":
         ast.literal_eval(sys.argv[3]),
         sys.argv[4],
         sys.argv[5],
-        sgtk_log_handler
+        sgtk_log_handler,
     )
