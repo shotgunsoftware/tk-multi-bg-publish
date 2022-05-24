@@ -41,6 +41,7 @@ jobs:
 - template: build-pipeline.yml@templates
   parameters:
     has_ui_tests: false
+    skip_tests: true
     additional_repositories:
     - name: tk-framework-qtwidgets
     - name: tk-framework-shotgunutils
