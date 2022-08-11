@@ -6,6 +6,10 @@ Overview
 
 tk-multi-bg-publish is a customizable Toolkit App that allows artists to perform ShotGrid publishes in a background process on their workstation so that they can move on to the next Task within their DCC.
 
+It is complementary to `tk-multi-publish2`_
+
+.. _tk-multi-publish2: https://developer.shotgridsoftware.com/tk-multi-publish2/
+
 .. important::
     This app is meant to allow for two things to happen at once on a single workstation, it is not intended to be an all-encompassing solution for queue management.
 
