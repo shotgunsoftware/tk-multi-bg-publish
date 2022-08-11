@@ -12,12 +12,20 @@ tk-multi-bg-publish is a customizable Toolkit App that allows artists to perform
 .. important::
     You will probably use twice as many resources on your workstation! RAM and CPU core usage may introduce performance issues while publishes are being performed in the background on your system.
 
-Sections to include in this documentation (WIP)
+How it works
+============
+
+----
+
+.. image:: ./resources/batch_publishing_overview.png
+
+----
+
+Sections remaining to include in this documentation (WIP)
 ***********************************************
 
 * How to add this to your config
 * How to write a hook to use this app
-* Processing diagram to complement the tk-multi-publish2 API
 * The Monitor interface
 * The log folders
 
