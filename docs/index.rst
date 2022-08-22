@@ -18,12 +18,6 @@ It is complementary to `tk-multi-publish2`_
 
     RAM and CPU core usage may introduce performance issues while publishes are being performed in the background on your system.
 
-How it works with tk-multi-publish2
-===================================
-
-.. image:: ./resources/batch_publishing_overview.png
-    :target: ./resources/batch_publishing_overview.png
-
 .. code-block:: python
 
     # Copyright (c) 2022 Autodesk, Inc.
@@ -244,4 +238,5 @@ https://developer.shotgridsoftware.com/tk-multi-publish2/customizing.html#post-p
 .. toctree::
     :maxdepth: 3
 
+    works_with_publish2
     add_to_config
