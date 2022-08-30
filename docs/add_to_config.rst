@@ -18,7 +18,9 @@ permalink_
 
 ----
 
-Tell your ``Engine`` to use the app (``env/includes/settings/tk-alias.yml``):
+Tell your ``Engine`` to use the app.
+
+Example: ``env/includes/settings/tk-alias.yml``:
 
 ::
 
@@ -51,6 +53,10 @@ Subclass the ``post_phase`` hook in the same ``env/includes/settings/tk-multi-pu
 ::
 
 Add the ``post_phase.py`` hook to your config named  ``hooks/tk-multi-publish2/post_phase.py`` as noted above in the subclass.
+
+This file is provided with this app in the ``hooks`` folder for you so you can copy it to your config
+
+----
 
 You can refer to the ``Alias Engine`` to see them working_ within the config_.
 
