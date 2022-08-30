@@ -18,6 +18,12 @@ It is complementary to `tk-multi-publish2`_
 
     RAM and CPU core usage may introduce performance issues while publishes are being performed in the background on your system.
 
+.. toctree::
+    :maxdepth: 3
+
+    works_with_publish2
+    add_to_config
+
 Sections remaining to include in this documentation (WIP)
 *********************************************************
 
@@ -42,9 +48,3 @@ def example_method(self, publisher_class):
     """
 
 https://developer.shotgridsoftware.com/tk-multi-publish2/customizing.html#post-phase-hook
-
-.. toctree::
-    :maxdepth: 3
-
-    works_with_publish2
-    add_to_config
