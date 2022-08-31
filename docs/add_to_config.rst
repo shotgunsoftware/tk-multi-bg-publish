@@ -3,14 +3,12 @@ Adding this app to your config
 
 Declare the app in your ``env/includes/app_locations.yml`` file:
 
-::
+.. code:: yaml
 
     apps.tk-multi-bg-publish.location:
       type: app_store
       name: tk-multi-bg-publish
       version: v0.1.0
-
-::
 
 permalink_
 
@@ -22,12 +20,10 @@ Tell your ``Engine`` to use the app.
 
 Example: ``env/includes/settings/tk-alias.yml``:
 
-::
+.. code:: yaml
 
     tk-multi-bg-publish:
       location: "@apps.tk-multi-bg-publish.location"
-
-::
 
 permalink2_
 
@@ -37,20 +33,16 @@ permalink2_
 
 Add an additional ``collector_settings`` entry in ``env/includes/settings/tk-multi-publish2.yml``:
 
-::
+.. code:: yaml
 
     collector_settings:
       Background Processing: True
 
-::
-
 Subclass the ``post_phase`` hook in the same ``env/includes/settings/tk-multi-publish2.yml`` file:
 
-::
+.. code:: yaml
 
     post_phase: "{self}/post_phase.py:{config}/tk-multi-publish2/post_phase.py"
-
-::
 
 Add the ``post_phase.py`` hook to your config named  ``hooks/tk-multi-publish2/post_phase.py`` as noted above in the subclass.
 
