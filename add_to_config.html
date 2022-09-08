@@ -1,0 +1,289 @@
+
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Adding this app to your config &mdash; tk-multi-bg-publish v0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to write a hook to run in this app" href="how_to_write_a_hook.html" />
+    <link rel="prev" title="How it works with tk-multi-publish2" href="works_with_publish2.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+    <a href='http://developer.shotgridsoftware.com'>
+    
+        <img style='width: 191px;
+                height: 60px;
+                margin: 2px;
+                border-radius: 0px;
+                padding: 0px;'
+            src='_static/logo@2x.png'/>
+    
+    </a>
+    
+
+          
+            <a href="index.html" class="icon icon-home"> tk-multi-bg-publish
+          
+
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="works_with_publish2.html">How it works with tk-multi-publish2</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Adding this app to your config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how_to_write_a_hook.html">How to write a hook to run in this app</a></li>
+<li class="toctree-l1"><a class="reference internal" href="monitor_and_logs.html">Monitor UI and logs</a></li>
+</ul>
+
+            
+          
+
+    <a href='genindex.html'>Alphabetic Index</a>
+
+    <div style='margin-top: 50px;
+                margin-left: 10px;
+                margin-right: 10px;
+                padding: 10px;
+                color: #b3b3b3;
+                font-size: 70%;
+                border-radius: 3px;
+                background-color: #444;
+                line-height: 18px;
+                '>
+    <style>
+        a.custom_post_menu { display: inline;
+                             padding: 0px;
+                             text-decoration: underline; }
+    </style>
+
+    <b>tk-multi-bg-publish</b> v0.1.0.<br>
+    
+        This documentation is part of the ShotGrid Pipeline Toolkit.
+    
+    For more information, please visit
+    <a class=custom_post_menu href='https://developer.shotgridsoftware.com'>The ShotGrid developer portal.</a>.
+    The code associated with this documentation can be found
+    <a class=custom_post_menu href='https://github.com/shotgunsoftware/tk-multi-bg-publish'>here</a>.
+
+    </div>
+
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">tk-multi-bg-publish</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Adding this app to your config</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="adding-this-app-to-your-config">
+<h1>Adding this app to your config<a class="headerlink" href="#adding-this-app-to-your-config" title="Permalink to this headline">¶</a></h1>
+<p>Declare the app in your <code class="docutils literal notranslate"><span class="pre">env/includes/app_locations.yml</span></code> file:</p>
+<div class="code yaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apps</span><span class="o">.</span><span class="n">tk</span><span class="o">-</span><span class="n">multi</span><span class="o">-</span><span class="n">bg</span><span class="o">-</span><span class="n">publish</span><span class="o">.</span><span class="n">location</span><span class="p">:</span>
+  <span class="nb">type</span><span class="p">:</span> <span class="n">app_store</span>
+  <span class="n">name</span><span class="p">:</span> <span class="n">tk</span><span class="o">-</span><span class="n">multi</span><span class="o">-</span><span class="n">bg</span><span class="o">-</span><span class="n">publish</span>
+  <span class="n">version</span><span class="p">:</span> <span class="n">v0</span><span class="o">.</span><span class="mf">1.0</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="https://github.com/shotgunsoftware/tk-config-default2/blob/72ba0043c9e5d1416ab1b6b11df34d4c90658cb6/env/includes/app_locations.yml#L83-L86">permalink</a></p>
+<hr class="docutils" />
+<p>Tell your <code class="docutils literal notranslate"><span class="pre">Engine</span></code> to use the app.</p>
+<p>Example: <code class="docutils literal notranslate"><span class="pre">env/includes/settings/tk-alias.yml</span></code>:</p>
+<div class="code yaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tk</span><span class="o">-</span><span class="n">multi</span><span class="o">-</span><span class="n">bg</span><span class="o">-</span><span class="n">publish</span><span class="p">:</span>
+  <span class="n">location</span><span class="p">:</span> <span class="s2">&quot;@apps.tk-multi-bg-publish.location&quot;</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="https://github.com/shotgunsoftware/tk-config-default2/blob/72ba0043c9e5d1416ab1b6b11df34d4c90658cb6/env/includes/settings/tk-alias.yml#L50-L51">permalink2</a></p>
+<hr class="docutils" />
+<p>Add an additional <code class="docutils literal notranslate"><span class="pre">collector_settings</span></code> entry in <code class="docutils literal notranslate"><span class="pre">env/includes/settings/tk-multi-publish2.yml</span></code>:</p>
+<div class="code yaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">collector_settings</span><span class="p">:</span>
+  <span class="n">Background</span> <span class="n">Processing</span><span class="p">:</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>Subclass the <code class="docutils literal notranslate"><span class="pre">post_phase</span></code> hook in the same <code class="docutils literal notranslate"><span class="pre">env/includes/settings/tk-multi-publish2.yml</span></code> file:</p>
+<div class="code yaml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">post_phase</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{self}</span><span class="s2">/post_phase.py:</span><span class="si">{config}</span><span class="s2">/tk-multi-publish2/post_phase.py&quot;</span>
+</pre></div>
+</div>
+<p>Add the <code class="docutils literal notranslate"><span class="pre">post_phase.py</span></code> hook to your config named  <code class="docutils literal notranslate"><span class="pre">hooks/tk-multi-publish2/post_phase.py</span></code> as noted above in the subclass.</p>
+<p>This file is provided with this app in the <code class="docutils literal notranslate"><span class="pre">hooks</span></code> folder for you so you can copy it to your config</p>
+<hr class="docutils" />
+<p>You can refer to the <code class="docutils literal notranslate"><span class="pre">Alias</span> <span class="pre">Engine</span></code> to see them <a class="reference external" href="https://github.com/shotgunsoftware/tk-config-default2/blob/72ba0043c9e5d1416ab1b6b11df34d4c90658cb6/env/includes/settings/tk-multi-publish2.yml#L517-L522">working</a> within the <a class="reference external" href="https://github.com/shotgunsoftware/tk-config-default2/blob/72ba0043c9e5d1416ab1b6b11df34d4c90658cb6/env/includes/settings/tk-multi-publish2.yml#L551">config</a>.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="how_to_write_a_hook.html" class="btn btn-neutral float-right" title="How to write a hook to run in this app" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="works_with_publish2.html" class="btn btn-neutral float-left" title="How it works with tk-multi-publish2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, Autodesk
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-2114792-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+</body>
+</html>
