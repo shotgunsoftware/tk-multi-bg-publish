@@ -163,7 +163,7 @@ def main(
         maya.standalone.initialize()
         import maya.cmds as cmds
 
-        # import pymel to be sure everyting has been sourced and imported
+        # import pymel to be sure everything has been sourced and imported
         import pymel.core as pm
     elif engine_name == "tk-alias":
         import alias_api
