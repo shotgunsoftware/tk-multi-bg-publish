@@ -106,11 +106,16 @@ def _get_progress_icon(parent, index):
             if status not in [constants.PUBLISH_FAILED, constants.FINALIZE_FAILED]
             else FAILED_COLOR
         )
+        spin_color = (
+            COMPLETED_COLOR
+            if status not in [constants.PUBLISH_FAILED, constants.FINALIZE_FAILED]
+            else FAILED_COLOR
+        )
         icon = __draw_icon(
             icon_size,
             str(progress_value),
             progress_value,
-            COMPLETED_COLOR,
+            spin_color,
             text_color=text_color,
         )
         tooltip = "Publish in progress: {}%".format(progress_value)
