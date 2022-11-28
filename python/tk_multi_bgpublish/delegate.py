@@ -100,8 +100,18 @@ def _get_progress_icon(parent, index):
     if item_type == PublishTreeModel.PUBLISH_SESSION:
         progress_value = index.data(PublishTreeModel.PROGRESS_ROLE)
         icon_size = index.data(PublishTreeModel.ICON_SIZE_ROLE)
+        status = index.data(PublishTreeModel.STATUS_ROLE)
+        text_color = (
+            WAITING_COLOR
+            if status not in [constants.PUBLISH_FAILED, constants.FINALIZE_FAILED]
+            else FAILED_COLOR
+        )
         icon = __draw_icon(
-            icon_size, str(progress_value), progress_value, COMPLETED_COLOR
+            icon_size,
+            str(progress_value),
+            progress_value,
+            COMPLETED_COLOR,
+            text_color=text_color,
         )
         tooltip = "Publish in progress: {}%".format(progress_value)
 

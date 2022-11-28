@@ -217,6 +217,11 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                     item_uuid=task["uuid"],
                 )
                 task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
+                if task["status"] in [
+                    constants.PUBLISH_FAILED,
+                    constants.FINALIZE_FAILED,
+                ]:
+                    self.report_error(session_item, task_item, task["status"])
                 parent_item.appendRow(task_item)
                 self.__tasks.append(task_item)
 
@@ -238,11 +243,17 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
                 task_item = self.get_item_from_uuid(task["uuid"])
                 if task_item:
 
+                    session_item = self.get_session_item(task_item.session_uuid)
+
                     task_item.setData(task["status"], PublishTreeModel.STATUS_ROLE)
+                    if task["status"] in [
+                        constants.PUBLISH_FAILED,
+                        constants.FINALIZE_FAILED,
+                    ]:
+                        self.report_error(session_item, task_item, task["status"])
 
                     # once the task status has been updated, force the publish session to refresh its progress value
                     progress_value = self.get_progress_value(task_item.session_uuid)
-                    session_item = self.get_session_item(task_item.session_uuid)
                     session_item.setData(progress_value, PublishTreeModel.PROGRESS_ROLE)
                     session_item.emitDataChanged()
 
@@ -322,3 +333,25 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         progress = 100 * task_completed / (task_nb * 2) if task_nb != 0 else 0
 
         return int(progress)
+
+    @staticmethod
+    def report_error(session_item, task_item, task_status):
+        """
+        Modify the display text when the task item has failed
+
+        :param session_item: The publish session item
+        :param task_item: The publish task item
+        :param task_status: The publish task status
+        """
+
+        # update session item status
+        session_item.setData(task_status, PublishTreeModel.STATUS_ROLE)
+
+        # update session item and task item text to display them in red
+        for i in [session_item, task_item]:
+            text = i.data(QtCore.Qt.DisplayRole)
+            if not text.startswith("<span"):
+                i.setData(
+                    "<span style='color:#BB0B0B;'>{}</span>".format(text),
+                    QtCore.Qt.DisplayRole,
+                )
