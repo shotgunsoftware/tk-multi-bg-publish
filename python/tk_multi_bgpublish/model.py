@@ -33,8 +33,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         ITEM_TYPE_ROLE,
         TOOLTIP_ROLE,
         LOG_FOLDER_ROLE,
+        DATE_ROLE,
         NEXT_AVAILABLE_ROLE,
-    ) = range(_BASE_ROLE, _BASE_ROLE + 9)
+    ) = range(_BASE_ROLE, _BASE_ROLE + 10)
 
     (PUBLISH_SESSION, PUBLISH_ITEM, PUBLISH_TASK) = range(3)
 
@@ -121,6 +122,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
             if role == PublishTreeModel.LOG_FOLDER_ROLE:
                 return self.__log_folder
 
+            if role == PublishTreeModel.DATE_ROLE:
+                return -os.stat(self.__log_folder).st_ctime
+
             return super(PublishTreeModel.PublishTreeItem, self).data(role)
 
         def setData(self, value, role):
@@ -145,6 +149,8 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         """
 
         QtGui.QStandardItemModel.__init__(self, parent)
+
+        self.setSortRole(self.DATE_ROLE)
 
         # this will be used to store all the tasks because of performance issue (going through the tree model is slower
         # than parsing a list)
@@ -222,6 +228,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
 
         progress_value = self.get_progress_value(session_uuid)
         session_item.setData(progress_value, PublishTreeModel.PROGRESS_ROLE)
+        self.sort(0)
 
     def update_publish_tree(self, tree_file):
         """
