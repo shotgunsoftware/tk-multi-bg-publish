@@ -5,7 +5,7 @@ See the user documentation available here_
 
 ----
 
-.. _here: https://help-staging.autodesk.com/view/ALIAS/2023/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html#Background%20publishing
+.. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html
 
 ..
     #TODO: Need to remove the Open Log Folder comment in page above
