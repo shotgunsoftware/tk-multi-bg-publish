@@ -10,9 +10,11 @@ It is complementary to `tk-multi-publish2`_
 
 .. _tk-multi-publish2: https://developer.shotgridsoftware.com/tk-multi-publish2/
 
-When configured, the publish flow is updated as shown in this screencapture taken in Alias:
+When configured, the publish flow is updated as shown in this screen capture taken in Alias:
 
-.. image:: ./resources/batch_publish_flow.gif
+.. figure:: ./resources/bg_publish_flow.gif
+
+    Screen capture of background publish flow
 
 The workfile will be incremented and the publish batch files will be written. The Background Monitor UI will pop to the front (if it is not open already) and you can close the main Publish UI window.
 You can then return to working in your DCC.
