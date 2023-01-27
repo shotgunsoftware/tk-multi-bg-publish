@@ -203,7 +203,17 @@
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>tk-multi-bg-publish is a customizable Toolkit App that allows artists to perform ShotGrid publishes in a background process on their workstation so that they can move on to the next Task within their DCC.</p>
 <p>It is complementary to <a class="reference external" href="https://developer.shotgridsoftware.com/tk-multi-publish2/">tk-multi-publish2</a></p>
-<p>Please refer to the user documentation available <a class="reference external" href="https://help.autodesk.com/view/ALIAS/2023/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html">here</a>.</p>
+<p>When configured, the publish flow is updated as shown in this screen capture taken in Alias:</p>
+<div class="figure" id="id1">
+<img alt="_images/bg_publish_flow.gif" src="_images/bg_publish_flow.gif" />
+<p class="caption"><span class="caption-text">Screen capture of background publish flow</span></p>
+</div>
+<ul class="simple">
+<li>The workfile will be incremented and the publish batch files will be written when you press Publish.</li>
+<li>The Background Monitor UI will pop to the front (if it is not open already) and you can close the main Publish UI window.</li>
+<li>You can then return to working in your DCC while the BG Publish is running.</li>
+</ul>
+<p>Please refer to the additional user documentation available <a class="reference external" href="https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html">here</a>.</p>
 <div class="admonition important">
 <p class="first admonition-title">Important</p>
 <p class="last">This app is meant to allow for two things to happen at once on a single workstation, it is not intended to be an all-encompassing solution for queue management.</p>
