@@ -16,12 +16,13 @@ When configured, the publish flow is updated as shown in this screen capture tak
 
     Screen capture of background publish flow
 
-The workfile will be incremented and the publish batch files will be written. The Background Monitor UI will pop to the front (if it is not open already) and you can close the main Publish UI window.
-You can then return to working in your DCC.
+- The workfile will be incremented and the publish batch files will be written when you press Publish.
+- The Background Monitor UI will pop to the front (if it is not open already) and you can close the main Publish UI window.
+- You can then return to working in your DCC while the BG Publish is running.
 
 Please refer to the additional user documentation available here_.
 
-.. _here: https://help.autodesk.com/view/ALIAS/2023/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html
+.. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html
 
 ..
     #TODO: Above needs to be replaced with a MURL and is currently only live on the staging site
