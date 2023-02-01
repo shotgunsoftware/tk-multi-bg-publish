@@ -22,11 +22,7 @@ When configured, the publish flow is updated as shown in this screen capture tak
 
 Please refer to the additional user documentation available here_.
 
-.. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html
-
-..
-    #TODO: Above needs to be replaced with a MURL and is currently only live on the staging site
-    #TODO: Can we add a specific anchor in the docs above instead of the main Publisher section?
+.. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html#background-publishing
 
 .. important::
     This app is meant to allow for two things to happen at once on a single workstation, it is not intended to be an all-encompassing solution for queue management.
