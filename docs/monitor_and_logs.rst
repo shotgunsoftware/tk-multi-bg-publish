@@ -5,11 +5,7 @@ See the user documentation available here_
 
 ----
 
-.. _here: https://help-staging.autodesk.com/view/ALIAS/2023/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html#Background%20publishing
-
-..
-    #TODO: Need to remove the Open Log Folder comment in page above
-    #TODO: See TODO comments in index.rst file
+.. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html#background-publishing
 
 The logs are created in a different location than other ShotGrid Desktop Logs and they will not be deleted by default, you can find them here:
 
