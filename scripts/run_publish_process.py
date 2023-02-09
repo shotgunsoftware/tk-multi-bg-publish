@@ -282,6 +282,8 @@ def main(
     finally:
         if engine_name == "tk-vred":
             vrController.terminateVred()
+        # shutdown the engine
+        current_engine.destroy()
 
 
 if __name__ == "__main__":
