@@ -180,7 +180,12 @@ class BackgroundPublisher(Application):
                 )
             )
 
-            cmd = [executable_path, "-hide_gui", "-postpython", python_cmd]
+            # VRED 2024 introduces Python Sandbox which requires authorization to run python
+            # scripts; however, the prompt to authorize is not shown when running with
+            # -hide_gui. So, we will need to add the '-insecure_python' flag to allow running
+            # our script. The alternative not using this flag, would be that the user must
+            # turn of Python Sandbox from Preferences>Scripts, or specify our module as allowed
+            cmd = [executable_path, "-hide_gui", "-insecure_python", "-postpython", python_cmd]
 
         else:
             cmd = [
