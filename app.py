@@ -185,7 +185,13 @@ class BackgroundPublisher(Application):
             # -hide_gui. So, we will need to add the '-insecure_python' flag to allow running
             # our script. The alternative not using this flag, would be that the user must
             # turn of Python Sandbox from Preferences>Scripts, or specify our module as allowed
-            cmd = [executable_path, "-hide_gui", "-insecure_python", "-postpython", python_cmd]
+            cmd = [
+                executable_path,
+                "-hide_gui",
+                "-insecure_python",
+                "-postpython",
+                python_cmd,
+            ]
 
         else:
             cmd = [
