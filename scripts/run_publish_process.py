@@ -156,6 +156,16 @@ def main(
     log_handler = logging.FileHandler(log_path)
     sgtk.LogManager().initialize_custom_handler(log_handler)
 
+    # bootstrap the engine
+    mgr = sgtk.bootstrap.ToolkitManager()
+    mgr.plugin_id = "basic.desktop"
+    mgr.pipeline_configuration = pipeline_config_id
+    mgr.bootstrap_engine(engine_name, entity_dict)
+
+    current_engine = sgtk.platform.current_engine()
+    publish_app = current_engine.apps.get("tk-multi-publish2")
+    bg_publish_app = current_engine.apps.get("tk-multi-bg-publish")
+
     # initialize the environment
     if engine_name == "tk-maya":
         import maya.standalone
@@ -166,23 +176,11 @@ def main(
         # import pymel to be sure everything has been sourced and imported
         import pymel.core as pm
     elif engine_name == "tk-alias":
-        import alias_api
-
-        alias_api.initialize_universe()
+        alias_api = current_engine.alias_py
     elif engine_name == "tk-vred":
         import vrController
         import vrFileIO
         import vrScenegraph
-
-    # bootstrap the engine
-    mgr = sgtk.bootstrap.ToolkitManager()
-    mgr.plugin_id = "basic.desktop"
-    mgr.pipeline_configuration = pipeline_config_id
-    mgr.bootstrap_engine(engine_name, entity_dict)
-
-    current_engine = sgtk.platform.current_engine()
-    publish_app = current_engine.apps.get("tk-multi-publish2")
-    bg_publish_app = current_engine.apps.get("tk-multi-bg-publish")
 
     # load the publish tree
     # manager = publish_app.create_publish_manager(publish_logger=current_engine.logger)

@@ -52,6 +52,8 @@ class AppUtilities(HookBaseClass):
             alias_bin_folder = os.path.dirname(sys.executable)
             if not env.get("PATH", "").startswith(alias_bin_folder):
                 env["PATH"] = "{};{}".format(alias_bin_folder, env.get("PATH", ""))
+            # Ensure tk-alias engine is running in OpenModel (headless/batch mode)
+            env["TK_ALIAS_OPEN_MODEL"] = "1"
             return env
 
         # in case of VRED, we don't want to enable the automatic ShotGrid integration in order to control the engine
