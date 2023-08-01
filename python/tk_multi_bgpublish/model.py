@@ -180,7 +180,9 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         :param tree_file: Path to the file where the publish monitor data are stored
         """
 
-        self._bundle.logger.debug("Adding a new publish session to the model...")
+        self._bundle.logger.debug(
+            f"Adding a new publish session to the model from {tree_file}"
+        )
 
         # create an uuid for the current session. It will be useful to gather all the tasks belonging to the same
         # session

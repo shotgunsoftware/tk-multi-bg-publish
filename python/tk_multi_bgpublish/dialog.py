@@ -111,8 +111,6 @@ class AppDialog(QtGui.QWidget):
         :param timeout: Refresh timeout
         """
 
-        self._bundle.logger.debug("Start refreshing the model data...")
-
         if timeout:
             time.sleep(timeout)
 
