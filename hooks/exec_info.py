@@ -56,8 +56,8 @@ class AppUtilities(HookBaseClass):
             env["TK_ALIAS_OPEN_MODEL"] = "1"
             return env
 
-        # in case of VRED, we don't want to enable the automatic ShotGrid integration in order to control the engine
-        # start when bootstrapping
+        # in case of VRED, we don't want to enable the automatic Flow Production Tracking integration in order to
+        # control the engine start when bootstrapping
         elif current_engine.name == "tk-vred":
             env = os.environ.copy()
             env["SHOTGUN_ENABLE"] = "0"
