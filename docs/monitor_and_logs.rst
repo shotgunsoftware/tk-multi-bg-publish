@@ -7,7 +7,7 @@ See the user documentation available here_
 
 .. _here: https://help.autodesk.com/view/SGSUB/ENU/?guid=Alias_ShotGrid_Workflows_alias_shotgrid_publishing_html#background-publishing
 
-The logs are created in a different location than other Flow Production Tracking Toolkit Logs and they will not be deleted by default, you can find them here:
+The logs are created in a different location than other Flow Production Tracking Logs and they will not be deleted by default, you can find them here:
 
 ``$SHOTGRID_HOME/<site name>/<config folder>/tm-bg-publish/<engine name>``
 
