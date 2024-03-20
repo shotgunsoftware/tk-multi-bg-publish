@@ -24,7 +24,7 @@ configuration:
 # any host application specific commands
 supported_engines:
 
-# the ShotGrid fields that this engine needs in order to operate correctly
+# the Flow Production Tracking fields that this engine needs in order to operate correctly
 requires_shotgun_fields:
 
 # More verbose description of this item

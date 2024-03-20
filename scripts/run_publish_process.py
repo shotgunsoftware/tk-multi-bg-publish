@@ -146,7 +146,7 @@ def main(
 
     :param engine_name: Name of the engine to launch
     :param pipeline_config_id: ID of the pipeline config to use when bootstrapping the engine
-    :param entity_dict: ShotGrid dictionary of the entity to use when bootstrapping the engine
+    :param entity_dict: Flow Production Tracking dictionary of the entity to use when bootstrapping the engine
     :param publish_tree: Path to the file to use to load the publish tree
     :param monitor_file_path: Path to the file to use to monitor the publish process
     """
