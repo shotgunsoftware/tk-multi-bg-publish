@@ -160,9 +160,8 @@ def main(
     mgr = sgtk.bootstrap.ToolkitManager()
     mgr.plugin_id = "basic.desktop"
     mgr.pipeline_configuration = pipeline_config_id
-    mgr.bootstrap_engine(engine_name, entity_dict)
+    current_engine = mgr.bootstrap_engine(engine_name, entity_dict)
 
-    current_engine = sgtk.platform.current_engine()
     publish_app = current_engine.apps.get("tk-multi-publish2")
     bg_publish_app = current_engine.apps.get("tk-multi-bg-publish")
 
