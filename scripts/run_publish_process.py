@@ -10,7 +10,6 @@ import logging
 import os
 import sys
 
-import sgtk
 from tank_vendor import yaml
 
 
@@ -151,6 +150,41 @@ def main(
     :param monitor_file_path: Path to the file to use to monitor the publish process
     """
 
+    # Initialize environment before importing sgtk
+    if engine_name == "tk-alias":
+        # Import the Alias api module first to ensure the correct MSVC runtime DLLs are loaded
+        # NOTE: since this is not using the tk-alias engine api init, this api module will not have extensions available
+
+        # Add the api path for importing the module
+        api_path = os.environ.get("BG_PUBLISH_ALIAS_API_PATH")
+        if not api_path:
+            raise Exception(
+                "Background publish for Alias requires BG_PUBLISH_ALIAS_API_PATH environment variable to be set"
+            )
+        sys.path.insert(0, api_path)
+
+        # Add the Alias DLL path to load the Alias lib dependency for the api
+        if hasattr(os, "add_dll_directory"):
+            alias_dll_path = os.environ.get("BG_PUBLISH_ALIAS_DLL_PATH")
+            if not alias_dll_path:
+                raise Exception(
+                    "Background publish for Alias requires BG_PUBLISH_ALIAS_DLL_PATH environment variable to be set"
+                )
+            os.add_dll_directory(alias_dll_path)
+
+        # Import the Alias api module and initialize
+        try:
+            import alias_api_om as alias_api
+
+            alias_api.initialize_universe()
+        except Exception as e:
+            raise Exception(
+                f"Failed to import and initialize Alias Python API for OpenModel: {e}"
+            )
+
+    # Delay importing the sgtk module to allow importing any necessary modules before sgtk
+    import sgtk
+
     # initialize a log handler
     log_path = os.path.join(os.path.dirname(monitor_file_path), "bg_publish.log")
     log_handler = logging.FileHandler(log_path)
@@ -174,8 +208,6 @@ def main(
 
         # import pymel to be sure everything has been sourced and imported
         import pymel.core as pm
-    elif engine_name == "tk-alias":
-        alias_api = current_engine.alias_py
     elif engine_name == "tk-vred":
         import vrController
         import vrFileIO
