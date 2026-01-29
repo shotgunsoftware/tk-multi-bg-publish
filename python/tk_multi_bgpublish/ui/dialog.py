@@ -1,34 +1,47 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Y:\SGTK\devs\tk-multi-bg-publish\resources\dialog.ui'
-#
-# Created: Mon May 16 17:23:25 2022
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'dialog.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from sgtk.platform.qt import QtCore, QtGui
+from tank.platform.qt import QtCore
+for name, cls in QtCore.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
+from tank.platform.qt import QtGui
+for name, cls in QtGui.__dict__.items():
+    if isinstance(cls, type): globals()[name] = cls
+
+
+from  . import resources_rc
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
+        if not Dialog.objectName():
+            Dialog.setObjectName(u"Dialog")
         Dialog.resize(540, 588)
-        self.verticalLayout = QtGui.QVBoxLayout(Dialog)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.view = QtGui.QTreeView(Dialog)
-        self.view.setStyleSheet("show-decoration-selected: 0;")
-        self.view.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.view.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.view.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.verticalLayout = QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.view = QTreeView(Dialog)
+        self.view.setObjectName(u"view")
+        self.view.setStyleSheet(u"show-decoration-selected: 0;")
+        self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.view.setRootIsDecorated(True)
-        self.view.setObjectName("view")
         self.view.header().setVisible(False)
+
         self.verticalLayout.addWidget(self.view)
 
         self.retranslateUi(Dialog)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        QMetaObject.connectSlotsByName(Dialog)
+    # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Form", None, QtGui.QApplication.UnicodeUTF8))
-
-from . import resources_rc
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Form", None))
+    # retranslateUi
