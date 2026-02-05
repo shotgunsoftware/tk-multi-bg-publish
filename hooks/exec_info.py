@@ -72,6 +72,37 @@ class AppUtilities(HookBaseClass):
             api_path = re.sub(r"python\d+\.\d+", bg_publish_python_version, api_path)
             env["BG_PUBLISH_ALIAS_API_PATH"] = api_path
 
+            # Get the Alias license info and set the environment variables for
+            # the background publish process. The background process will use
+            # the Alias OpenModel API, which requires setting the license info,
+            # starting in Alias 2027.0
+            alias_lic_info = current_engine.alias_py.get_product_information()
+            product_key = alias_lic_info.get("product_key")
+            product_version = alias_lic_info.get("product_version")
+            product_license_type = alias_lic_info.get("product_license_type")
+            product_license_path = alias_lic_info.get("product_license_path")
+
+            if not all(
+                [
+                    product_key,
+                    product_version,
+                    product_license_type,
+                    product_license_path,
+                ]
+            ):
+                raise Exception(
+                    f"""Missing Alias license informatin required for background publish:
+                    product_key: {product_key}
+                    product_version: {product_version}
+                    product_license_type: {product_license_type}
+                    product_license_path: {product_license_path}
+                    """
+                )
+            env["BG_PUBLISH_ALIAS_PRODUCT_KEY"] = product_key
+            env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"] = product_version
+            env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"] = product_license_type
+            env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"] = product_license_path
+
             return env
 
         # in case of VRED, we don't want to enable the automatic Flow Production Tracking integration in order to

@@ -152,7 +152,7 @@ def main(
 
     # Initialize environment before importing sgtk
     if engine_name == "tk-alias":
-        # Import the Alias api module first to ensure the correct MSVC runtime DLLs are loaded
+        # Import the Alias api module before sgtk to ensure the correct MSVC runtime DLLs are loaded
         # NOTE: since this is not using the tk-alias engine api init, this api module will not have extensions available
 
         # Add the api path for importing the module
@@ -176,7 +176,45 @@ def main(
         try:
             import alias_api_om as alias_api
 
-            alias_api.initialize_universe()
+            # Starting in Alias 2027.0, using OpenModel API requires setting the
+            # license information before initializing the universe
+            if hasattr(alias_api, "set_license_information"):
+                product_key = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_KEY", "")
+                product_version = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_VERSION", "")
+                product_lic_type = os.environ.get(
+                    "BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE", ""
+                )
+                product_lic_path = os.environ.get(
+                    "BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH", ""
+                )
+                status = alias_api.set_license_information(
+                    product_key,
+                    product_version,
+                    product_lic_type,
+                    product_lic_path,
+                )
+                if status != alias_api.AlStatusCode.Success.value:
+                    raise Exception(
+                        f"""Failed to set Alias license info. Status code: {status}
+                        product_key: {product_key}
+                        product_version: {product_version}
+                        product_lic_type: {product_lic_type}
+                        product_lic_path: {product_lic_path}
+                        """
+                    )
+
+            # Initialize the Alias universe before using the API
+            init_status = alias_api.initialize_universe()
+            if hasattr(alias_api, "is_initialized"):
+                if not alias_api.is_initialized():
+                    raise Exception(
+                        f"Failed to initialize Alias universe. Status code: {init_status}"
+                    )
+            elif init_status == alias_api.AlStatusCode.Failure.value:
+                raise Exception(
+                    f"Failed to initialize Alias universe. Status code: {init_status}"
+                )
+
         except Exception as e:
             raise Exception(
                 f"Failed to import and initialize Alias Python API for OpenModel: {e}"
