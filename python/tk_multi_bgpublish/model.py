@@ -37,7 +37,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         NEXT_AVAILABLE_ROLE,
     ) = range(_BASE_ROLE, _BASE_ROLE + 10)
 
-    (PUBLISH_SESSION, PUBLISH_ITEM, PUBLISH_TASK) = range(3)
+    PUBLISH_SESSION, PUBLISH_ITEM, PUBLISH_TASK = range(3)
 
     TOOLTIP_TEXT = {
         constants.WAITING_TO_START: "The publish job is waiting to start",
