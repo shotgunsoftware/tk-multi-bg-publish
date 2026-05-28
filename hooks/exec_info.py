@@ -64,13 +64,30 @@ class AppUtilities(HookBaseClass):
                     "Background publish for Alias requires TK_ALIAS_EXECPATH environment variable to be set"
                 )
             env["BG_PUBLISH_ALIAS_DLL_PATH"] = os.path.dirname(alias_exec_path)
+
             # Get the api path for the python version that will run the background publish process
-            api_path = os.path.dirname(current_engine.alias_py.__file__)
+            alias_fw_path = os.environ.get("TK_FRAMEWORK_ALIAS_PYTHON_PATH")
+            if not alias_fw_path:
+                raise Exception(
+                    "Background publish for Alias requires TK_FRAMEWORK_ALIAS_PYTHON_PATH environment variable to be set"
+                )
+            alias_version = os.environ.get("TK_ALIAS_VERSION")
+            if not alias_version:
+                raise Exception(
+                    "Background publish for Alias requires TK_ALIAS_VERSION environment variable to be set"
+                )
             bg_publish_python_version = (
                 f"python{sys.version_info.major}.{sys.version_info.minor}"
             )
-            api_path = re.sub(r"python\d+\.\d+", bg_publish_python_version, api_path)
-            env["BG_PUBLISH_ALIAS_API_PATH"] = api_path
+            env["BG_PUBLISH_ALIAS_API_PATH"] = os.path.join(
+                alias_fw_path,
+                os.path.pardir,
+                "dist",
+                "Alias",
+                bg_publish_python_version,
+                alias_version,
+            )
+            print(f"BG_PUBLISH_ALIAS_API_PATH: {env['BG_PUBLISH_ALIAS_API_PATH']}")
 
             # Get the Alias license info and set the environment variables for
             # the background publish process. The background process will use
@@ -81,6 +98,12 @@ class AppUtilities(HookBaseClass):
             product_version = alias_lic_info.get("product_version")
             product_license_type = alias_lic_info.get("product_license_type")
             product_license_path = alias_lic_info.get("product_license_path")
+
+            # TODO test once we can get a real license
+            print(f"Product key: {product_key}")
+            print(f"Product version: {product_version}")
+            print(f"Product license type: {product_license_type}")
+            print(f"Product license path: {product_license_path}")
 
             if not all(
                 [
