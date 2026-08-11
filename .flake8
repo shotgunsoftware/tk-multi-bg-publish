@@ -12,7 +12,7 @@
 #
 # This defines the official lint and PEP8 rules for this repository
 #
-# You can run this locally by doing pep install flake8 and then
+# You can run this locally by doing pip install flake8 and then
 # >flake8 /path/to/core
 #
 # This is also used by the hound CI - see the .hound.yml config file.
