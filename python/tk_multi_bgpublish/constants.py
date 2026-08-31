@@ -17,3 +17,6 @@
     FINALIZE_FAILED,
     WARNING,
 ) = range(8)
+
+# Engines that formally support bg publish
+BG_SUPPORTED_ENGINES = ["tk-vred", "tk-alias", "tk-maya"]
