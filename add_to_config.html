@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Adding this app to your config &mdash; tk-multi-bg-publish v0.2.3 documentation</title>
+  <title>Adding this app to your config &mdash; tk-multi-bg-publish v0.2.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -85,7 +85,7 @@
                              text-decoration: underline; }
     </style>
 
-    <b>tk-multi-bg-publish</b> v0.2.3.<br>
+    <b>tk-multi-bg-publish</b> v0.2.4.<br>
     
         This documentation is part of the Flow Production Tracking.
     
@@ -141,7 +141,7 @@
 <p>Tell your <code class="docutils literal notranslate"><span class="pre">Engine</span></code> to use the app.</p>
 <p>Example: <code class="docutils literal notranslate"><span class="pre">env/includes/settings/tk-alias.yml</span></code>:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tk-multi-bg-publish</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;@apps.tk-multi-bg-publish.location&quot;</span>
+<span class="w">  </span><span class="nt">location</span><span class="p">:</span><span class="w"> </span><span class="s">"@apps.tk-multi-bg-publish.location"</span>
 </pre></div>
 </div>
 <p><a class="reference external" href="https://github.com/shotgunsoftware/tk-config-default2/blob/72ba0043c9e5d1416ab1b6b11df34d4c90658cb6/env/includes/settings/tk-alias.yml#L50-L51">permalink2</a></p>
@@ -152,7 +152,7 @@
 </pre></div>
 </div>
 <p>Subclass the <code class="docutils literal notranslate"><span class="pre">post_phase</span></code> hook in the same <code class="docutils literal notranslate"><span class="pre">env/includes/settings/tk-multi-publish2.yml</span></code> file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">post_phase</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{self}/post_phase.py:{config}/tk-multi-publish2/post_phase.py&quot;</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">post_phase</span><span class="p">:</span><span class="w"> </span><span class="s">"{self}/post_phase.py:{config}/tk-multi-publish2/post_phase.py"</span>
 </pre></div>
 </div>
 <p>Add the <code class="docutils literal notranslate"><span class="pre">post_phase.py</span></code> hook to your config named  <code class="docutils literal notranslate"><span class="pre">hooks/tk-multi-publish2/post_phase.py</span></code> as noted above in the subclass.</p>
