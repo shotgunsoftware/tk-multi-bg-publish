@@ -35,6 +35,7 @@ description: "Provides UI and functionality to launch and monitor background pub
 requires_shotgun_version: "v6.2.0"
 requires_core_version: "v0.18.45"
 requires_engine_version:
+minimum_python_version: "3.9"
 
 # the frameworks required to run this app
 frameworks:

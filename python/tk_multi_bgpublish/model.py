@@ -171,7 +171,7 @@ class PublishTreeModel(QtGui.QStandardItemModel, ViewItemRolesMixin):
         # be sure to remove all the stored items
         self.__tasks = []
 
-        super(PublishTreeModel, self).clear()
+        super().clear()
 
     def add_publish_tree(self, tree_file):
         """
