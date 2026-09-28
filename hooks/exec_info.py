@@ -66,8 +66,8 @@ class AppUtilities(HookBaseClass):
             env["TK_ALIAS_HAS_UI"] = "0"
             env["TK_ALIAS_OPEN_MODEL"] = "1"
 
-            uses_bundled = self._alias_uses_bundled_python(engine)
-            self._add_alias_license_to_env(env, engine, uses_bundled)
+            uses_bundled = self._alias_uses_bundled_python(current_engine)
+            self._add_alias_license_to_env(env, current_engine, uses_bundled)
 
             if uses_bundled:
                 env["PYTHONPATH"] = self._pythonpath_without_desktop_stdlib(
@@ -76,7 +76,7 @@ class AppUtilities(HookBaseClass):
                 env.pop("PYTHONHOME", None)
                 return env
 
-            alias_exec = engine.alias_execpath or os.environ.get("TK_ALIAS_EXECPATH")
+            alias_exec = current_engine.alias_execpath or os.environ.get("TK_ALIAS_EXECPATH")
             if not alias_exec:
                 raise Exception(
                     "Background publish for Alias requires TK_ALIAS_EXECPATH"
@@ -94,7 +94,7 @@ class AppUtilities(HookBaseClass):
                     "Background publish for Alias requires "
                     "TK_FRAMEWORK_ALIAS_PYTHON_PATH"
                 )
-            alias_version = os.environ.get("TK_ALIAS_VERSION") or engine.alias_version
+            alias_version = os.environ.get("TK_ALIAS_VERSION") or current_engine.alias_version
             if not alias_version:
                 raise Exception(
                     "Background publish for Alias requires TK_ALIAS_VERSION"
