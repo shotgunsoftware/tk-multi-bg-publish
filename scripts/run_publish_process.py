@@ -10,7 +10,42 @@ import logging
 import os
 import sys
 
+# Alias 2027.1+ bundled Python does not always apply PYTHONPATH at interpreter
+# startup. exec_info_hook sets a safe PYTHONPATH on the subprocess environment.
+for _pythonpath_entry in reversed(
+    [
+        entry.strip()
+        for entry in os.environ.get("PYTHONPATH", "").split(os.pathsep)
+        if entry.strip()
+    ]
+):
+    if _pythonpath_entry not in sys.path:
+        sys.path.insert(0, _pythonpath_entry)
+
 from tank_vendor import yaml
+
+
+def open_alias_openmodel_session(alias_api_module, session_path):
+    """
+    Open a session file in Alias OpenModel before running publish tasks.
+
+    The bg subprocess uses raw ``alias_api_om``, not ``engine.alias_py``, because
+    OpenModel file APIs may differ from in-Alias ``alias_api`` (e.g. ``wire.open``
+    vs ``open_file``).
+
+    :param alias_api_module: The initialized ``alias_api_om`` module.
+    :param session_path: Path to the Alias session/work file saved during publish.
+    :returns: Alias API status code (compare to ``AlStatusCode``).
+    :raises Exception: If no supported open entry point exists on the module.
+    """
+    wire_mod = getattr(alias_api_module, "wire", None)
+    if wire_mod is not None and hasattr(wire_mod, "open"):
+        return wire_mod.open(session_path)
+    if hasattr(alias_api_module, "open_file"):
+        return alias_api_module.open_file(session_path)
+    raise Exception(
+        "Cannot open session: Alias OpenModel API has no wire.open() or open_file()"
+    )
 
 
 def change_progress_status(
@@ -151,48 +186,49 @@ def main(
     """
 
     # Initialize environment before importing sgtk
+    alias_api = None
     if engine_name == "tk-alias":
-        # Import the Alias api module before sgtk to ensure the correct MSVC runtime DLLs are loaded
-        # NOTE: since this is not using the tk-alias engine api init, this api module will not have extensions available
-
-        # Add the api path for importing the module
-        api_path = os.environ.get("BG_PUBLISH_ALIAS_API_PATH")
-        if not api_path:
-            raise Exception(
-                "Background publish for Alias requires BG_PUBLISH_ALIAS_API_PATH environment variable to be set"
-            )
-        sys.path.insert(0, api_path)
-
-        # Add the Alias DLL path to load the Alias lib dependency for the api
-        if hasattr(os, "add_dll_directory"):
-            alias_dll_path = os.environ.get("BG_PUBLISH_ALIAS_DLL_PATH")
-            if not alias_dll_path:
-                raise Exception(
-                    "Background publish for Alias requires BG_PUBLISH_ALIAS_DLL_PATH environment variable to be set"
-                )
-            os.add_dll_directory(alias_dll_path)
-
-        # Import the Alias api module and initialize
         try:
+            api_path = os.environ.get("BG_PUBLISH_ALIAS_API_PATH")
+            alias_dll_path = os.environ.get("BG_PUBLISH_ALIAS_DLL_PATH")
+            if api_path or alias_dll_path:
+                if not alias_dll_path:
+                    raise Exception(
+                        "Background publish for Alias requires BG_PUBLISH_ALIAS_DLL_PATH "
+                        "environment variable to be set"
+                    )
+                if hasattr(os, "add_dll_directory"):
+                    os.add_dll_directory(alias_dll_path)
+                if api_path:
+                    sys.path.insert(0, api_path)
+                elif alias_dll_path not in sys.path:
+                    sys.path.insert(0, alias_dll_path)
+
             import alias_api_om as alias_api
 
-            # Starting in Alias 2027.0, using OpenModel API requires setting the
-            # license information before initializing the universe
             if hasattr(alias_api, "set_license_information"):
                 product_key = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_KEY", "")
-                product_version = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_VERSION", "")
+                product_version = os.environ.get(
+                    "BG_PUBLISH_ALIAS_PRODUCT_VERSION", ""
+                )
                 product_lic_type = os.environ.get(
                     "BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE", ""
                 )
                 product_lic_path = os.environ.get(
                     "BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH", ""
                 )
-                status = alias_api.set_license_information(
-                    product_key,
-                    product_version,
-                    product_lic_type,
-                    product_lic_path,
-                )
+                # Alias 2027.1+ OpenModel API: key and version only (no BG_PUBLISH_ALIAS_API_PATH).
+                if api_path:
+                    status = alias_api.set_license_information(
+                        product_key,
+                        product_version,
+                        product_lic_type,
+                        product_lic_path,
+                    )
+                else:
+                    status = alias_api.set_license_information(
+                        product_key, product_version
+                    )
                 if status != alias_api.AlStatusCode.Success.value:
                     raise Exception(
                         f"""Failed to set Alias license info. Status code: {status}
@@ -203,7 +239,6 @@ def main(
                         """
                     )
 
-            # Initialize the Alias universe before using the API
             init_status = alias_api.initialize_universe()
             if hasattr(alias_api, "is_initialized"):
                 if not alias_api.is_initialized():
@@ -214,7 +249,6 @@ def main(
                 raise Exception(
                     f"Failed to initialize Alias universe. Status code: {init_status}"
                 )
-
         except Exception as e:
             raise Exception(
                 f"Failed to import and initialize Alias Python API for OpenModel: {e}"
@@ -276,7 +310,13 @@ def main(
     if engine_name == "tk-maya":
         cmds.file(session_path, open=True, force=True)
     elif engine_name == "tk-alias":
-        alias_api.open_file(session_path)
+        status = open_alias_openmodel_session(alias_api, session_path)
+        if status == alias_api.AlStatusCode.Failure.value:
+            raise Exception(
+                "Failed to open Alias session {} (status {})".format(
+                    session_path, status
+                )
+            )
     elif engine_name == "tk-vred":
         vrFileIO.load(
             [session_path],
