@@ -42,64 +42,30 @@ class BackgroundPublisher(Application):
 
     def create_dialog(self):
         """
-        Shows the panel as a dialog.
+        Shows the monitor as a dialog.
+
+        Delegates to :func:`tk_multi_bgpublish.create_dialog` so Qt is only
+        required when the user opens the UI, not when the app bundle loads.
 
         :returns: The widget associated with the dialog.
         """
-
-        # try to find existing window in order to avoid having many instances of the same app opened at the same time
-        app_dialog = None
-        for qt_dialog in self.engine.created_qt_dialogs:
-            if not hasattr(qt_dialog, "_widget"):
-                continue
-            app_name = qt_dialog._widget.property("app_name")
-            if app_name == self.name:
-                app_dialog = qt_dialog
-                break
-
-        if app_dialog:
-            app_dialog.raise_()
-            app_dialog.activateWindow()
-        else:
-            tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
-            app_dialog = self.engine.show_dialog(
-                self.display_name,
-                self,
-                tk_multi_bgpublish.AppDialog,
-            )
-            app_dialog.setProperty("app_name", self.name)
-
-        return app_dialog
+        tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
+        return tk_multi_bgpublish.create_dialog(self)
 
     def create_panel(self):
         """
         Shows the UI as a panel.
+
         Note that since panels are singletons by nature,
         calling this more than once will only result in one panel.
 
+        Delegates to :func:`tk_multi_bgpublish.create_panel` for the same
+        headless-safe import behavior as :meth:`create_dialog`.
+
         :returns: The widget associated with the panel.
         """
-
         tk_multi_bgpublish = self.import_module("tk_multi_bgpublish")
-
-        # start the UI
-        try:
-            widget = self.engine.show_panel(
-                self._unique_panel_id,
-                self.display_name,
-                self,
-                tk_multi_bgpublish.AppDialog,
-            )
-        except AttributeError as e:
-            # just to gracefully handle older engines and older cores
-            self.logger.warning(
-                "Could not execute show_panel method - please upgrade "
-                "to latest core and engine! Falling back on show_dialog. "
-                "Error: %s" % e
-            )
-            widget = self.create_dialog()
-
-        return widget
+        return tk_multi_bgpublish.create_panel(self)
 
     def launch_publish_process(self, publish_tree_file_path):
         """

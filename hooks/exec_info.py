@@ -6,7 +6,6 @@
 # Source Code License included in this distribution package. See LICENSE.
 
 import os
-import re
 import sys
 
 import sgtk
@@ -28,10 +27,25 @@ class AppUtilities(HookBaseClass):
             maya_folder = os.path.dirname(sys.executable)
             return os.path.join(maya_folder, "mayapy.exe")
 
-        elif current_engine.name == "tk-alias":
+        if current_engine.name == "tk-alias":
+            if self._alias_uses_bundled_python(current_engine):
+                alias_exec = current_engine.alias_execpath or os.environ.get("TK_ALIAS_EXECPATH")
+                if not alias_exec:
+                    raise Exception(
+                        "Background publish for Alias requires TK_ALIAS_EXECPATH"
+                    )
+                python_exe = os.path.join(
+                    os.path.dirname(alias_exec), "Python", "python.exe"
+                )
+                if not os.path.isfile(python_exe):
+                    raise Exception(
+                        "Alias 2027.1+ background publish requires bundled Python at "
+                        f"{python_exe}"
+                    )
+                return python_exe
             return os.path.join(sys.prefix, "python.exe")
 
-        elif current_engine.name == "tk-vred":
+        if current_engine.name == "tk-vred":
             return sys.executable
 
         return None
@@ -46,70 +60,146 @@ class AppUtilities(HookBaseClass):
 
         current_engine = self.parent.engine
 
-        # in case of Alias, we need to make sure the path to the Alias executable is first in the PATH environment
-        # variable
         if current_engine.name == "tk-alias":
+
             env = os.environ.copy()
-            alias_bin_folder = os.path.dirname(sys.executable)
-            if not env.get("PATH", "").startswith(alias_bin_folder):
-                env["PATH"] = "{};{}".format(alias_bin_folder, env.get("PATH", ""))
-            # Ensure tk-alias engine is running in OpenModel (headless/batch mode)
+            env["TK_ALIAS_HAS_UI"] = "0"
             env["TK_ALIAS_OPEN_MODEL"] = "1"
 
-            # Set environment variables for the background publish process to import the Alias api module
-            # NOTE: this is a workaround to MSVC runtime DLL conflicts between the Alias api and PySide
-            alias_exec_path = os.environ.get("TK_ALIAS_EXECPATH")
-            if not alias_exec_path:
-                raise Exception(
-                    "Background publish for Alias requires TK_ALIAS_EXECPATH environment variable to be set"
+            uses_bundled = self._alias_uses_bundled_python(current_engine)
+            self._add_alias_license_to_env(env, current_engine, uses_bundled)
+
+            if uses_bundled:
+                env["PYTHONPATH"] = self._pythonpath_without_desktop_stdlib(
+                    env.get("PYTHONPATH", "")
                 )
-            env["BG_PUBLISH_ALIAS_DLL_PATH"] = os.path.dirname(alias_exec_path)
-            # Get the api path for the python version that will run the background publish process
-            api_path = os.path.dirname(current_engine.alias_py.__file__)
-            bg_publish_python_version = (
-                f"python{sys.version_info.major}.{sys.version_info.minor}"
+                env.pop("PYTHONHOME", None)
+                return env
+
+            alias_exec = current_engine.alias_execpath or os.environ.get("TK_ALIAS_EXECPATH")
+            if not alias_exec:
+                raise Exception(
+                    "Background publish for Alias requires TK_ALIAS_EXECPATH"
+                )
+            alias_bin = os.path.dirname(alias_exec)
+            desktop_bin = os.path.dirname(sys.executable)
+            if not env.get("PATH", "").startswith(desktop_bin):
+                env["PATH"] = "{};{}".format(desktop_bin, env.get("PATH", ""))
+
+            env["BG_PUBLISH_ALIAS_DLL_PATH"] = alias_bin
+
+            alias_fw_path = os.environ.get("TK_FRAMEWORK_ALIAS_PYTHON_PATH")
+            if not alias_fw_path:
+                raise Exception(
+                    "Background publish for Alias requires "
+                    "TK_FRAMEWORK_ALIAS_PYTHON_PATH"
+                )
+            alias_version = os.environ.get("TK_ALIAS_VERSION") or current_engine.alias_version
+            if not alias_version:
+                raise Exception(
+                    "Background publish for Alias requires TK_ALIAS_VERSION"
+                )
+            py_ver = "python{}.{}".format(
+                sys.version_info.major, sys.version_info.minor
             )
-            api_path = re.sub(r"python\d+\.\d+", bg_publish_python_version, api_path)
-            env["BG_PUBLISH_ALIAS_API_PATH"] = api_path
-
-            # Get the Alias license info and set the environment variables for
-            # the background publish process. The background process will use
-            # the Alias OpenModel API, which requires setting the license info,
-            # starting in Alias 2027.0
-            alias_lic_info = current_engine.alias_py.get_product_information()
-            product_key = alias_lic_info.get("product_key")
-            product_version = alias_lic_info.get("product_version")
-            product_license_type = alias_lic_info.get("product_license_type")
-            product_license_path = alias_lic_info.get("product_license_path")
-
-            if not all(
-                [
-                    product_key,
-                    product_version,
-                    product_license_type,
-                    product_license_path,
-                ]
-            ):
-                raise Exception(
-                    f"""Missing Alias license informatin required for background publish:
-                    product_key: {product_key}
-                    product_version: {product_version}
-                    product_license_type: {product_license_type}
-                    product_license_path: {product_license_path}
-                    """
-                )
-            env["BG_PUBLISH_ALIAS_PRODUCT_KEY"] = product_key
-            env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"] = product_version
-            env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"] = product_license_type
-            env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"] = product_license_path
-
+            env["BG_PUBLISH_ALIAS_API_PATH"] = os.path.join(
+                alias_fw_path,
+                os.path.pardir,
+                "dist",
+                "Alias",
+                py_ver,
+                str(alias_version).strip().split()[0],
+            )
             return env
 
-        # in case of VRED, we don't want to enable the automatic Flow Production Tracking integration in order to
-        # control the engine start when bootstrapping
-        elif current_engine.name == "tk-vred":
+        if current_engine.name == "tk-vred":
             env = os.environ.copy()
             env["SHOTGUN_ENABLE"] = "0"
             return env
 
         return None
+
+    def _alias_uses_bundled_python(self, engine):
+        """
+        Return whether background publish should use Alias bundled Python.
+
+        For Alias versions at or above ``ALIAS_BUNDLED_PYTHON_MIN_VERSION`` on
+        the engine, the subprocess runs ``{Alias bin}/Python/python.exe`` instead
+        of ShotGrid Desktop's interpreter.
+
+        :param engine: The current Toolkit engine (``tk-alias``).
+        :rtype: bool
+        """
+        version = os.environ.get("TK_ALIAS_VERSION") or engine.alias_version
+        if not version:
+            return False
+        return (
+            engine.compare_alias_versions(
+                version, engine.ALIAS_BUNDLED_PYTHON_MIN_VERSION
+            )
+            >= 0
+        )
+
+    def _add_alias_license_to_env(self, env, engine, uses_bundled_python=False):
+        """
+        Copy Alias license fields into env vars for ``run_publish_process.py``.
+
+        OpenModel on 2027.1+ only needs product key and version in the subprocess;
+        older flows also pass license type and path (see ``BG_PUBLISH_ALIAS_API_PATH``).
+
+        :param env: Subprocess environment dict to update.
+        :param engine: The current Toolkit engine (``tk-alias``).
+        :param uses_bundled_python: If True, only key and version are required.
+        :raises Exception: If required license fields are missing.
+        """
+        lic = engine.alias_py.get_product_information()
+        env["BG_PUBLISH_ALIAS_PRODUCT_KEY"] = lic.get("product_key")
+        env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"] = lic.get("product_version")
+        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"] = lic.get("product_license_type")
+        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"] = lic.get("product_license_path")
+        required = [
+            env["BG_PUBLISH_ALIAS_PRODUCT_KEY"],
+            env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"],
+        ]
+        if not uses_bundled_python:
+            required.extend(
+                [
+                    env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"],
+                    env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"],
+                ]
+            )
+        if not all(required):
+            raise Exception(
+                "Missing Alias license information for background publish: {0}".format(
+                    lic
+                )
+            )
+
+    def _pythonpath_without_desktop_stdlib(self, pythonpath):
+        """
+        Remove ShotGrid Desktop Python install entries from ``PYTHONPATH``.
+
+        Bundled Alias Python must not pick up Desktop's stdlib or site-packages
+        (broken extensions such as ``_csv`` / ``hashlib``). Parent process paths
+        are copied into the subprocess env first; this filters that list.
+
+        :param pythonpath: ``PYTHONPATH`` value (``os.pathsep``-separated).
+        :returns: Filtered ``PYTHONPATH`` string.
+        """
+        desktop_root = os.path.normcase(
+            os.path.join(
+                os.environ.get("ProgramFiles", r"C:\Program Files"),
+                "Shotgun",
+                "Python3",
+            )
+        )
+        kept = []
+        for entry in pythonpath.split(os.pathsep):
+            entry = entry.strip()
+            if not entry:
+                continue
+            norm = os.path.normcase(os.path.normpath(entry))
+            if norm == desktop_root or norm.startswith(desktop_root + os.sep):
+                continue
+            kept.append(entry)
+        return os.pathsep.join(kept)
