@@ -208,9 +208,7 @@ def main(
 
             if hasattr(alias_api, "set_license_information"):
                 product_key = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_KEY", "")
-                product_version = os.environ.get(
-                    "BG_PUBLISH_ALIAS_PRODUCT_VERSION", ""
-                )
+                product_version = os.environ.get("BG_PUBLISH_ALIAS_PRODUCT_VERSION", "")
                 product_lic_type = os.environ.get(
                     "BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE", ""
                 )
