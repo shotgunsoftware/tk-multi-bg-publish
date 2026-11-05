@@ -161,8 +161,8 @@ class AppUtilities(HookBaseClass):
         lic = engine.alias_py.get_product_information()
         env["BG_PUBLISH_ALIAS_PRODUCT_KEY"] = lic.get("product_key")
         env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"] = lic.get("product_version")
-        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"] = lic.get("product_license_type")
-        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"] = lic.get("product_license_path")
+        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_TYPE"] = lic.get("product_license_type") or ""
+        env["BG_PUBLISH_ALIAS_PRODUCT_LIC_PATH"] = lic.get("product_license_path") or ""
         required = [
             env["BG_PUBLISH_ALIAS_PRODUCT_KEY"],
             env["BG_PUBLISH_ALIAS_PRODUCT_VERSION"],
