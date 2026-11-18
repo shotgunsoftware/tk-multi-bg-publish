@@ -139,12 +139,19 @@ class AppUtilities(HookBaseClass):
         version = os.environ.get("TK_ALIAS_VERSION") or engine.alias_version
         if not version:
             return False
-        return (
-            engine.compare_alias_versions(
-                version, engine.ALIAS_BUNDLED_PYTHON_MIN_VERSION
+        try:
+            return (
+                engine.compare_alias_versions(
+                    version, engine.ALIAS_BUNDLED_PYTHON_MIN_VERSION
+                )
+                >= 0
             )
-            >= 0
-        )
+        except AttributeError as exc:
+            raise Exception(
+                "Background publish for Alias requires an updated tk-alias engine "
+                "(compare_alias_versions and ALIAS_BUNDLED_PYTHON_MIN_VERSION). "
+                "Update tk-alias in your Toolkit configuration."
+            ) from exc
 
     def _add_alias_license_to_env(self, env, engine, uses_bundled_python=False):
         """
@@ -181,31 +188,54 @@ class AppUtilities(HookBaseClass):
                 )
             )
 
+    def _host_python_install_roots(self):
+        """
+        Normalized prefixes for the Toolkit host (parent) Python install.
+
+        ``exec_info`` runs in the engine client process (for example Flow Desktop's
+        Python when Alias 2024+ launches the client out-of-process), not inside
+        Alias's embedded plugin server. The background-publish **subprocess** uses
+        Alias bundled ``python.exe``; this helper strips that child's ``PYTHONPATH``
+        of entries belonging to the **parent** interpreter (``sys.prefix``, etc.).
+
+        :returns: List of normalized directory paths.
+        """
+        roots = []
+        for candidate in (
+            sys.prefix,
+            getattr(sys, "base_prefix", None),
+            sys.exec_prefix,
+            os.path.dirname(sys.executable),
+        ):
+            if not candidate:
+                continue
+            norm = os.path.normcase(os.path.normpath(candidate))
+            if norm not in roots:
+                roots.append(norm)
+        return roots
+
     def _pythonpath_without_desktop_stdlib(self, pythonpath):
         """
-        Remove ShotGrid Desktop Python install entries from ``PYTHONPATH``.
+        Remove parent-process Python install entries from ``PYTHONPATH``.
 
-        Bundled Alias Python must not pick up Desktop's stdlib or site-packages
-        (broken extensions such as ``_csv`` / ``hashlib``). Parent process paths
-        are copied into the subprocess env first; this filters that list.
+        For Alias 2027.1+, the child runs Alias bundled Python while ``PYTHONPATH``
+        is inherited from the Toolkit host env. Those host paths must not include
+        the host stdlib or site-packages (e.g. broken ``_csv`` / ``hashlib`` when
+        mixed with Alias's interpreter).
 
         :param pythonpath: ``PYTHONPATH`` value (``os.pathsep``-separated).
         :returns: Filtered ``PYTHONPATH`` string.
         """
-        desktop_root = os.path.normcase(
-            os.path.join(
-                os.environ.get("ProgramFiles", r"C:\Program Files"),
-                "Shotgun",
-                "Python3",
-            )
-        )
+        host_roots = self._host_python_install_roots()
         kept = []
         for entry in pythonpath.split(os.pathsep):
             entry = entry.strip()
             if not entry:
                 continue
             norm = os.path.normcase(os.path.normpath(entry))
-            if norm == desktop_root or norm.startswith(desktop_root + os.sep):
+            if any(
+                norm == root or norm.startswith(root + os.sep) for root in host_roots
+            ):
                 continue
             kept.append(entry)
         return os.pathsep.join(kept)
