@@ -255,10 +255,16 @@ def main(
     # Delay importing the sgtk module to allow importing any necessary modules before sgtk
     import sgtk
 
-    # initialize a log handler
+    # Log to bg_publish.log for Toolkit and for the publish manager. Publish2's
+    # ``create_publish_manager(publish_logger=...)`` must receive a :class:`logging.Logger`
+    # (it calls ``getChild`` for hook loggers), not a :class:`logging.Handler``.
     log_path = os.path.join(os.path.dirname(monitor_file_path), "bg_publish.log")
     log_handler = logging.FileHandler(log_path)
     sgtk.LogManager().initialize_custom_handler(log_handler)
+    publish_logger = logging.getLogger("tk_multi_bg_publish.process")
+    publish_logger.setLevel(logging.DEBUG)
+    publish_logger.propagate = False
+    publish_logger.addHandler(log_handler)
 
     # initialize the environment
     # NOTE: this must be done before bootstrapping the engine to ensure Maya cmds
@@ -284,8 +290,7 @@ def main(
     bg_publish_app = current_engine.apps.get("tk-multi-bg-publish")
 
     # load the publish tree
-    # manager = publish_app.create_publish_manager(publish_logger=current_engine.logger)
-    manager = publish_app.create_publish_manager(publish_logger=log_handler)
+    manager = publish_app.create_publish_manager(publish_logger=publish_logger)
     manager.load(publish_tree)
 
     # modify the publish tree to indicate that we're now processing in background mode
