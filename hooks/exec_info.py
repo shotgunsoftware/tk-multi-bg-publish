@@ -7,6 +7,7 @@
 
 import os
 import sys
+import sysconfig
 
 import sgtk
 
@@ -72,7 +73,7 @@ class AppUtilities(HookBaseClass):
             self._add_alias_license_to_env(env, current_engine, uses_bundled)
 
             if uses_bundled:
-                env["PYTHONPATH"] = self._pythonpath_without_desktop_stdlib(
+                env["PYTHONPATH"] = self._pythonpath_without_host_stdlib(
                     env.get("PYTHONPATH", "")
                 )
                 env.pop("PYTHONHOME", None)
@@ -188,45 +189,44 @@ class AppUtilities(HookBaseClass):
                 )
             )
 
-    def _host_python_install_roots(self):
+    @staticmethod
+    def _normalized_paths_under_host_stdlib():
         """
-        Normalized prefixes for the Toolkit host (parent) Python install.
+        Host-interpreter stdlib locations to omit from the child's ``PYTHONPATH``.
 
-        ``exec_info`` runs in the engine client process (for example Flow Desktop's
-        Python when Alias 2024+ launches the client out-of-process), not inside
-        Alias's embedded plugin server. The background-publish **subprocess** uses
-        Alias bundled ``python.exe``; this helper strips that child's ``PYTHONPATH``
-        of entries belonging to the **parent** interpreter (``sys.prefix``, etc.).
+        Derived from :mod:`sysconfig` for the Toolkit client process (e.g. Flow
+        Desktop Python). Toolkit bundle paths such as ``bundle_cache`` are not
+        under these trees and are preserved for subprocess bootstrap.
 
-        :returns: List of normalized directory paths.
+        :returns: Normalized directory paths used to filter ``PYTHONPATH`` entries.
         """
+        scheme = sysconfig.get_default_scheme()
         roots = []
-        for candidate in (
-            sys.prefix,
-            getattr(sys, "base_prefix", None),
-            sys.exec_prefix,
-            os.path.dirname(sys.executable),
-        ):
-            if not candidate:
+        for name in sysconfig.get_path_names():
+            path = sysconfig.get_path(name, scheme=scheme)
+            if not path:
                 continue
-            norm = os.path.normcase(os.path.normpath(candidate))
+            norm = os.path.normcase(os.path.normpath(path))
+            if norm not in roots:
+                roots.append(norm)
+        dlls_dir = os.path.join(sys.base_prefix, "DLLs")
+        if os.path.isdir(dlls_dir):
+            norm = os.path.normcase(os.path.normpath(dlls_dir))
             if norm not in roots:
                 roots.append(norm)
         return roots
 
-    def _pythonpath_without_desktop_stdlib(self, pythonpath):
+    def _pythonpath_without_host_stdlib(self, pythonpath):
         """
-        Remove parent-process Python install entries from ``PYTHONPATH``.
+        Drop host stdlib and site-packages from an inherited ``PYTHONPATH``.
 
-        For Alias 2027.1+, the child runs Alias bundled Python while ``PYTHONPATH``
-        is inherited from the Toolkit host env. Those host paths must not include
-        the host stdlib or site-packages (e.g. broken ``_csv`` / ``hashlib`` when
-        mixed with Alias's interpreter).
+        For Alias 2027.1+, the publish subprocess uses bundled ``python.exe``; mixing
+        in the Desktop client's stdlib breaks native extension imports.
 
         :param pythonpath: ``PYTHONPATH`` value (``os.pathsep``-separated).
         :returns: Filtered ``PYTHONPATH`` string.
         """
-        host_roots = self._host_python_install_roots()
+        stdlib_roots = self._normalized_paths_under_host_stdlib()
         kept = []
         for entry in pythonpath.split(os.pathsep):
             entry = entry.strip()
@@ -234,7 +234,7 @@ class AppUtilities(HookBaseClass):
                 continue
             norm = os.path.normcase(os.path.normpath(entry))
             if any(
-                norm == root or norm.startswith(root + os.sep) for root in host_roots
+                norm == root or norm.startswith(root + os.sep) for root in stdlib_roots
             ):
                 continue
             kept.append(entry)
