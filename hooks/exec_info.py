@@ -195,15 +195,16 @@ class AppUtilities(HookBaseClass):
         Host-interpreter stdlib locations to omit from the child's ``PYTHONPATH``.
 
         Derived from :mod:`sysconfig` for the Toolkit client process (e.g. Flow
-        Desktop Python). Toolkit bundle paths such as ``bundle_cache`` are not
-        under these trees and are preserved for subprocess bootstrap.
+        Desktop Python). ``get_path`` is called without an explicit scheme so this
+        works on Python 3.9 (``get_default_scheme()`` requires 3.10+). Toolkit
+        bundle paths such as ``bundle_cache`` are not under these trees and are
+        preserved for subprocess bootstrap.
 
         :returns: Normalized directory paths used to filter ``PYTHONPATH`` entries.
         """
-        scheme = sysconfig.get_default_scheme()
         roots = []
         for name in sysconfig.get_path_names():
-            path = sysconfig.get_path(name, scheme=scheme)
+            path = sysconfig.get_path(name)
             if not path:
                 continue
             norm = os.path.normcase(os.path.normpath(path))
